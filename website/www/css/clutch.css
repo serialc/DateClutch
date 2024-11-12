@@ -1,0 +1,76 @@
+/* blither CSS */
+
+/* Colour scheme
+  is triadic with the
+  teal: #36FFA8
+  ocre: #FFA836
+  violet: #A836FF
+*/
+
+/* define custom properties */
+:root {
+    --primary-colour: #36FFA8;
+    --secondary-colour: #A836FF;
+    --highlight-colour: #FFA836;
+}
+
+body {
+    font-size: 1.3em;
+}
+
+footer {
+    font-size: 0.7em;
+}
+    
+div#content {
+    min-height: 70vh;
+}
+
+div#footer {
+    min-height: 20vh;
+}
+
+nav {
+  padding: 0 15px;
+}
+
+h1 {
+    color: var(--primary-colour);
+}
+h2 {
+    color: var(--secondary-colour);
+}
+h3 {
+    color: var(--highlight-colour);
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+button.btn {
+    background-color: var(--highlight-colour);
+    border-color: var(--highlight-colour);
+    color: black;
+}
+button.btn:hover, button.btn:first-child:active {
+    background-color: var(--highlight-colour);
+    border-color: var(--highlight-colour);
+    color: black;
+}
+
+button.btn-flashes:first-child:active {
+    background-color: var(--primary-colour);
+    border-color: var(--primary-colour);
+    transition: all 0.2s ease-out;
+}
+
+a {
+    color: var(--primary-colour);
+}
+
+a:hover, [type="submit"].btn:hover {
+    opacity: 0.8;
+    transition: all 0.2s;
+}
