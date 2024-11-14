@@ -34,6 +34,10 @@ case 'poll':
     include '../php/poll.php';
     break;
 
+case 'results':
+    include '../php/poll_results.php';
+    break;
+
 default:
     include '../php/main.php';
 }

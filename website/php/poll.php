@@ -12,6 +12,10 @@ if (!empty($poll_code)) {
 
     $poll = Poll::fromCode($poll_code);
 
+    if ($poll === false) {
+        return;
+    }
+
     $submit_error = false;
     // show the processing results
     if (isset($_POST['pname'])) {

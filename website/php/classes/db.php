@@ -187,12 +187,12 @@ class DataBaseConnection
         return ($result and $stmt->rowCount() === 1);
     }
 
-    public function createPoll ($uid, $title, $code, $description, $dates, $emails)
+    public function createPoll ($uid, $title, $code, $admin_code, $description, $dates, $emails)
     {
         // add the basic poll info to the table
-        $sql = "INSERT INTO " . TABLE_POLLS . " (uid, title, code, description) VALUES (?, ?,?,?)";
+        $sql = "INSERT INTO " . TABLE_POLLS . " (uid, title, code, admin_code, description) VALUES (?,?,?,?,?)";
         $stmt = $this->conn->prepare($sql);
-        if(!$stmt->execute([$uid, $title, $code, $description]) ) {
+        if(!$stmt->execute([$uid, $title, $code, $admin_code, $description]) ) {
             return false;
         }
 
@@ -233,6 +233,18 @@ class DataBaseConnection
         return false;
     }   
 
+    public function retrievePollFromAdminCode ($code)
+    {   
+        $sql = "SELECT * FROM " . TABLE_POLLS . " WHERE admin_code=?";
+        $stmt = $this->conn->prepare($sql);
+        $result = $stmt->execute([$code]);
+
+        if ($result and $stmt->rowCount() === 1) {
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        }
+        return false;
+    }
+
     public function retrievePollFromCode ($code)
     {   
         $sql = "SELECT * FROM " . TABLE_POLLS . " WHERE code=?";
@@ -259,7 +271,7 @@ class DataBaseConnection
 
     public function getUserPolls ($uid)
     {
-        $sql = "SELECT title, code FROM " . TABLE_POLLS . " WHERE uid=?";
+        $sql = "SELECT title, code, admin_code FROM " . TABLE_POLLS . " WHERE uid=?";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$uid]);
         $polls = [];

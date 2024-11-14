@@ -27,6 +27,12 @@ class Mail
         $this->mail->SMTPAuth   = true;
         $this->mail->Username   = EMAIL_SENDER;
         $this->mail->Password   = EMAIL_PASSWORD;
+
+        // Reply-to info
+        // Don'change to an email from another domain
+        // receiving servers won't accept it
+        $this->mail->setFrom(EMAIL_REPLYTO, EMAIL_REPLYTONAME);
+
         // Enable implicit TLS encryption
         if ( EMAIL_PORT === 465 ) {
             $this->mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;   // port 465
@@ -43,8 +49,6 @@ class Mail
         global $log;
 
         try {
-            // Sender proxy info
-            $this->mail->setFrom($reply_to_email, $reply_to_name);
 
             // Recipients
             $this->mail->addAddress($email, $to_name);
@@ -77,12 +81,14 @@ class Mail
 
         $text = strip_tags($html);
 
-        if( !$this->send($email, $name, $title, $html, $text)) {
+        if( !$this->send($email, $name, $title, $html, $text) ) {
                 $log->error("Failed to send email notification to " . $email . ' for ' . $title . '.');
         }
     }
     public function sendClutcher ($name, $title, $date, $email, $reply_to_email, $reply_to_name)
     {
+        global $log;
+
         $html = '<html><body style="font-size: 1.3em; background-color: #212529; padding: 10%; color: #dee2e6;"><center>' .
             '<p style="color: #dee2e6;">Thank you <strong style="color: #A836FF">' . $name .
             '</strong></span> for clutching the strong date of <strong style="color: #36FFA8">' . $date . '</strong>.' . "\n" . '<p>Good choice!</p>' . "\n" .
@@ -94,7 +100,7 @@ class Mail
 
         $text = strip_tags($html);
 
-        if( !$this->send($email, $name, $title, $html, $text, $reply_to_email, $reply_to_name)) {
+        if( !$this->send($email, $name, $title, $html, $text) ) {
                 $log->error("Failed to send email notification to " . $email . ' for ' . $title . '.');
         }
     }

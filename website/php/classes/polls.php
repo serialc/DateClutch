@@ -12,6 +12,7 @@ class Poll
     private $pid;
     private $title;
     private $code;
+    private $admin_code;
     private $description;
     private $dates;
     private $creator_email;
@@ -48,11 +49,21 @@ class Poll
         return (new self())->db->getUserPolls($uid);
     }
 
+    public static function fromAdminCode( $admin_poll_code )
+    {
+        $instance = new self();
+        if ($instance->retrieveByCode($admin_poll_code, 'admin')) {
+            return $instance;
+        }
+        return false;
+    }
     public static function fromCode( $poll_code )
     {
         $instance = new self();
-        $instance->retrieveByCode($poll_code);
-        return $instance;
+        if ($instance->retrieveByCode($poll_code, 'public')) {
+            return $instance;
+        }
+        return false;
     }
 
     public function retrieveByPid ($poll_id)
@@ -60,17 +71,29 @@ class Poll
         $poll = $this->db->retrievePollFromPid($poll_code);
     }
 
-    public function retrieveByCode ($poll_code)
+    public function retrieveByCode ($poll_code, $type)
     {
-        $poll = $this->db->retrievePollFromCode($poll_code);
+        switch ($type) {
+        case "public":
+            $poll = $this->db->retrievePollFromCode($poll_code);
+            break;
+
+        case "admin":
+            $poll = $this->db->retrievePollFromAdminCode($poll_code);
+            break;
+        }
+
+        // if the poll details were retrieved, then also get the dates
         if ($poll !== false) {
             $this->fillDetails($poll);
             $poll_dates = $this->db->retrievePollDates($this->pid);
             $this->fillDates($poll_dates);
-        } else {
-            echo '<h2>Requested poll does not exist.</h2>';
-            echo '<p>Perhaps it once did?<br>Perhaps the link was incorrectly copied?<br>Contact the person whom provided you the link.</p>';
+            return true;
         }
+
+        echo '<h2>Requested poll does not exist.</h2>';
+        echo '<p>Perhaps it once did?<br>Perhaps the link was incorrectly copied?<br>Contact the person whom provided you the link.</p>';
+        return false;
     }
 
     private function fillDetails ($db_data)
@@ -100,10 +123,11 @@ class Poll
         // check if this poll is being viewed by it's owner/creator
         if ( $user->getId() === $this->uid ) {
             $poll_edit_url = 'http://' . $_SERVER['SERVER_NAME'] . '/user/poll/' . $this->code;
-            $poll_responses_url = 'http://' . $_SERVER['SERVER_NAME'] . '/user/poll_results/' . $this->code;
+            $poll_dates_edit_url = 'http://' . $_SERVER['SERVER_NAME'] . '/user/poll_results/' . $this->code;
+
             echo '<p class="text-end accent3">' .
                 '<a href="' . $poll_edit_url . '" title="Edit poll details"><i class="fa fa-pencil" aria-hidden="true"></i></a>' .
-                ' <a href="' . $poll_responses_url . '" title="Edit dates and results"><i class="fa fa-users" aria-hidden="true"></i></a>' .
+                ' <a href="' . $poll_dates_edit_url . '" title="Edit dates and results"><i class="fa fa-users" aria-hidden="true"></i></a>' .
                 '</p>';
         }
         echo '<h2>' . $this->title . '</h2>';
@@ -196,8 +220,14 @@ class Poll
     {
         global $user;
 
+        // determine if we are in new or edit mode
+        $edit_mode = false;
+        if ( isset($this->uid) ) {
+            $edit_mode = true;
+        }
+
         // check that the user is allowed to edit this poll
-        if ( $user->getId() !== $this->uid ) {
+        if ( $edit_mode and $user->getId() !== $this->uid ) {
             return;
         }
 
@@ -209,10 +239,8 @@ class Poll
 
         // show form if we haven't submitted data yet or there are errors
         if (!isset($_POST['ptitle']) or $submit_error) {
-            // haven't implemented notifications yet - leave blank
-            $this->displayEditForm("edit", $this->title, $this->description, $this->dates, '');
-        } else {
-            $this->showLinks();
+            // haven't implemented notifications (last parameter) yet - leave blank
+            $this->displayEditForm($edit_mode, $this->title, $this->description, $this->dates, '');
         }
     }
 
@@ -306,11 +334,12 @@ class Poll
             // generate random code for poll URL if need
             if (empty($this->code)) {
                 $this->code = getRandomCode(64);
+                $this->admin_code = getRandomCode(64);
             }
 
             // If this is a new poll
             if (empty($this->pid)) {
-                if($this->db->createPoll($user->getId(), $this->title, $this->code, $this->description, $valid_dates_array, $valid_notify_array)) {
+                if($this->db->createPoll($user->getId(), $this->title, $this->code, $this->admin_code, $this->description, $valid_dates_array, $valid_notify_array)) {
                     $this->showLinks();
                 } else {
                     printAlert("Failed to submit data to DB. Contact the developer.");
@@ -327,17 +356,13 @@ class Poll
         return $submit_error;
     }
 
-    private function displayEditForm ($mode, $ptitle, $pdescription, $pdates, $pnotifications)
+    private function displayEditForm ($edit_mode, $ptitle, $pdescription, $pdates, $pnotifications)
     {
         // form and title input
-        switch($mode) {
-        case "new":
-            echo '<h2>New poll</h2>';
-            break;
-
-        case "edit":
+        if ($edit_mode) {
             echo '<h2>Edit poll</h2>';
-            break;
+        } else {
+            echo '<h2>New poll</h2>';
         }
 
         echo <<< _END
@@ -365,18 +390,16 @@ class Poll
 
         // DATES - show textarea for new polls, editable results for edits
         echo '<div class="col-12 mb-3"><label for="pdates" class="form-label">Dates</label>';
-        switch($mode) {
-        case "new":
+
+        if ($edit_mode) {
+            $poll_responses_url = 'http://' . $_SERVER['SERVER_NAME'] . '/user/poll_results/' . $this->code;
+            echo '<div><a href="' . $poll_responses_url . '">Edit dates</a></div>';
+        } else {
             // Show textarea input
             echo '<textarea id="pdates" name="pdates" class="form-control mb-0" aria-label="datesHelp" rows="5">' . $pdates . '</textarea>';
             echo '<small id="datesHelp" class="form-text text-muted">Enter dates in YYYY-MM-DD format in rows or comma separated.</small>';
-            break;
-
-        case "edit":
-            $poll_responses_url = 'http://' . $_SERVER['SERVER_NAME'] . '/user/poll_results/' . $this->code;
-            echo '<div><a href="' . $poll_responses_url . '">Edit dates</a></div>';
-            break;
         }
+
         echo '</div>';
 
         // Notifications - disabled currently
@@ -456,19 +479,32 @@ class Poll
     {
         $poll_url = 'http://' . $_SERVER['SERVER_NAME'] . '/poll/' . $this->code;
         $poll_edit_url = 'http://' . $_SERVER['SERVER_NAME'] . '/user/poll/' . $this->code;
+        $poll_results_url = 'http://' . $_SERVER['SERVER_NAME'] . '/results/' . $this->admin_code;
 
         // show the results of form processing
-        echo "<h2>Poll created</h2>";
+        echo '<h2>Created poll</h2>';
+        echo '<h3>' . $this->title . '</h2>';
         echo '<div class="row"><div class="col fs-5">';
         echo '<div>Visit the <a href="' . $poll_url . '">poll</a></div>';
         echo '<div>Share the poll <button data="' . $poll_url . '" class="btn btn-sm btn-flashes" onclick="CLU.copyUrl(event)">Copy URL</button></div>';
         echo '<div>Edit the <a href="' . $poll_edit_url . '">poll</div>';
+        echo '<div>See the <a href="' . $poll_results_url . '">results</div>';
         echo "</div></div>";
     }
 
     public function getTitle ()
     {
         return $this->title;
+    }
+
+    public function getPublicCode ()
+    {
+        return $this->code;
+    }
+
+    public function getPublicUrl ()
+    {
+        return 'http://' . $_SERVER['SERVER_NAME'] . '/poll/' . $this->code;
     }
 
     private function getDatesString ()
@@ -501,5 +537,23 @@ class Poll
         $this->creator_name = $creator['username'];
         $this->creator_email = $creator['email'];
         $this->creator_status = $creator['status'];
+    }
+
+    public function displayResults ()
+    {
+        echo '<div class="row mb-2">';
+        $clutchers_count = 0;
+        foreach ($this->dates as $date => $clutcher) {
+            if( !empty($clutcher) ) {
+                echo '<div class="col-lg-3 col-md-4 col-sm-6 mb-2"><div class="daterow rounded p-1">';
+                echo $date . ': ' . $clutcher;
+                echo '</div></div>';
+                $clutchers_count += 1;
+            }
+        }
+        echo '</div>';
+
+        echo '<h3>' . $clutchers_count . ' people have clutched a date</h3>';
+        echo ($clutchers_count === 0) ? '<p class="accent1">Don\'t let that make you sad</p>' : "";
     }
 }

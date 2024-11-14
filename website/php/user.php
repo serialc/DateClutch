@@ -11,7 +11,8 @@ if ($user->getStatus() >= MEMBER_STATUS_BASIC) {
     switch ($req[1]) {
 
     case 'create':
-        include '../php/user/create_poll.php';
+        $poll = new Poll();
+        $poll->displayEditing();
         break;
 
     case 'poll':

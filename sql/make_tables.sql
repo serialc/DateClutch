@@ -15,6 +15,7 @@ CREATE TABLE polls (
     uid MEDIUMINT UNSIGNED, 
     title VARCHAR(128) NOT NULL,
     code VARCHAR(64) NOT NULL,
+    admin_code VARCHAR(64) NOT NULL,
     description TEXT,
     PRIMARY KEY (pid)
 );
