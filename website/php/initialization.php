@@ -9,7 +9,7 @@ use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
 // set the cookie and then start the session
-session_set_cookie_params(['SameSite' => 'Strict']);
+session_set_cookie_params(['samesite' => 'Strict', 'lifetime' => 2592000]);
 session_start();
 
 require_once("../vendor/autoload.php");
@@ -90,7 +90,7 @@ switch ($req[0]) {
         break;
 
     case 'api':
-        require_once '../php/api.php';
+        include '../php/api.php';
         break;
 
     default:

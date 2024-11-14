@@ -5,17 +5,21 @@
 </div>
 
 <div class="row">
-    <div class="col-md-6 hero text-center mt-5">
+    <div class="col-md-6  text-center mt-5">
         <h3>Lost?</h3>
         <p>You should have been sent a link to a specific poll URL.</p>
     </div>
 
-    <div class="col-md-6 hero text-center mt-5 mb-5">
+    <div class="col-md-6  text-center mt-5 mb-5">
         <h3>Contribute!</h3>
-        <p>Make DateClutch better. The code is on <a href="https://github.com/serialc/DateClutch" target="_blank">Github</a>
+        <p>Make DateClutch better. The code is on <a href="https://github.com/serialc/DateClutch" target="_blank">Github</a>.
     </div>
 
-    <div class="col-12 hero mt-5">
+    <div class="col-md-3  mt-5">
+        <h3 class="text-center"><i class="fa fa-hand-rock-o" aria-hidden="true" style="font-size: 7em"></i></h3>
+    </div>
+    <div class="col-md-1  mt-5"></div>
+    <div class="col-md-8  mt-5">
         <h3>What is date clutching?</h3>
         <p>You want people to grab one date from a set of options.</p>
         <ul>

@@ -48,7 +48,7 @@ if ( isset($_POST['pdates']) ) {
 
         <div class="col-12 mb-3">
             <label for="pnotifications" class="form-label">Notify</label>
-            <input type="text" class="form-control" autofocus="autofocus" id="pnotifications" name="pnotifications" maxlength="256" aria-describedby="notifHelp" value="
+            <input type="text" class="form-control" autofocus="autofocus" id="pnotifications" name="pnotifications" maxlength="256" aria-describedby="notifHelp" disabled value="
 
 <?php
 if ( isset($_POST['pnotifications']) ) {

@@ -68,13 +68,12 @@ if (isset($_POST['ptitle'])) {
 
     // Email parsing/validation
     $valid_notify_array = [];
-    $regex = '/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/'; 
 
     // only evaluate emails if there are some
     if(!empty(trim($_POST['pnotifications']))) {
         foreach (explode(',', $_POST['pnotifications']) as $nemail) {
             $san_nemail = filter_var($nemail, FILTER_SANITIZE_EMAIL);
-            if (preg_match($regex, $san_nemail)) {
+            if (checkEmailValidity($san_nemail)) {
                 array_push($valid_notify_array, filter_var($nemail, FILTER_SANITIZE_EMAIL));
             } else {
                 printAlert("Email " . $nemail . " is not valid.");
@@ -83,8 +82,8 @@ if (isset($_POST['ptitle'])) {
         }
     }
 
-    // generate random code for poll URL - why 21 characters long - why not?
-    $url_code = getRandomCode(21);
+    // generate random code for poll URL
+    $url_code = getRandomCode(64);
 
     // ok, no errors - add to DB
     if (!$submit_error) {

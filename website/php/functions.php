@@ -4,6 +4,11 @@
 
 namespace frakturmedia\clutch;
 
+function printSuccess($msg)
+{
+    printAlert($msg, $type='success');
+}
+
 function printAlert($msg, $type='danger')
 {
     echo '<div class="alert alert-' . $type . ' fs-6" role="alert">' . $msg . '</div>';
@@ -14,6 +19,12 @@ function buildResponse($data, $status = 200): string
     header("HTTP/1.1 " . $status . " " . requestStatus($status));
     header('Content-Type: application/json; charset=utf-8');
     return json_encode($data, JSON_UNESCAPED_SLASHES);
+}
+
+function checkEmailValidity($email)
+{
+    $regex = '/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/'; 
+    return preg_match($regex, $email);
 }
 
 function requestStatus($code): string

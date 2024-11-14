@@ -2,14 +2,34 @@
 // Filename: php/user/user.php
 // Purpose: Allows display of user content to users
 
+namespace frakturmedia\clutch;
+
+require_once('../php/classes/polls.php');
+
 // if user is logged in
 if ($user->getStatus() >= MEMBER_STATUS_BASIC) {
     switch ($req[1]) {
+
     case 'create':
         include '../php/user/create_poll.php';
         break;
 
+    case 'poll':
+        if (isset($req[2])) {
+            $poll = Poll::fromCode($req[2]);
+            $poll->displayEditing();
+        }
+        break;
+
+    case 'poll_results':
+        if (isset($req[2])) {
+            $poll = Poll::fromCode($req[2]);
+            $poll->displayResponsesEditing();
+        }
+        break;
+
     case 'polls':
+        // need to fold below code into php/class/polls.php
         include '../php/user/polls.php';
         break;
 
