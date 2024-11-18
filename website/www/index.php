@@ -38,6 +38,10 @@ case 'results':
     include '../php/poll_results.php';
     break;
 
+case 'password_reset':
+    include '../php/pw_reset.php';
+    break;
+
 default:
     include '../php/main.php';
 }

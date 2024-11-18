@@ -85,6 +85,7 @@ class Mail
                 $log->error("Failed to send email notification to " . $email . ' for ' . $title . '.');
         }
     }
+
     public function sendClutcher ($name, $title, $date, $email, $reply_to_email, $reply_to_name)
     {
         global $log;
@@ -102,6 +103,26 @@ class Mail
 
         if( !$this->send($email, $name, $title, $html, $text) ) {
                 $log->error("Failed to send email notification to " . $email . ' for ' . $title . '.');
+        }
+    }
+
+    public function sendPasswordResetUrl ($email, $name, $reset_url)
+    {
+        global $log;
+
+        $html = '<html><body style="font-size: 1.3em; background-color: #212529; padding: 10%; color: #dee2e6;"><center>' .
+            '<p style="color: #dee2e6;">Well hello<strong style="color: #A836FF"> ' . $name .
+            '</strong></span>,</p>' . "\n" .
+            '<p style="color: #dee2e6;">You, or someone being naughty, has stated that you have forgotten your <span style="color: #FFA836;"><strong>DateClutch</strong></span> password.</p>' . "\n" .
+            '<p style="color: #dee2e6;">Ignore this if it was not you.</p>' . "\n" .
+            '<p style="color: #dee2e6;">However, if you <emphasis>have</emphasis> forgotten your password, then you should really consider using a password manager (<a href="https://www.mozilla.org/en-US/firefox/features/password-manager/" style="color: #36ffa8">Firefox/Mozilla</a>, a non-profit, provides one freely!).</p>' . "\n" .
+            '<p style="color: #dee2e6;">Anyway, <a href="' . $reset_url . '" style="color: #36ffa8">here is your link</a> to reset your password - if you need it.</p>' . "\n" .
+            '<p style="color: #dee2e6;"><a href="' . $reset_url . '" style="color: #36ffa8">' . $reset_url . '</a></p>' . "\n" .
+            '</center></body></html>';
+        $text = strip_tags($html);
+
+        if( !$this->send($email, $name, "Password reset request", $html, $text) ) {
+                $log->error("Failed to send password reset email to " . $email . '.');
         }
     }
 }

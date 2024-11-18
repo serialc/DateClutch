@@ -4,7 +4,6 @@
 
 namespace frakturmedia\clutch;
 
-use Datetime;
 use PDO;
 
 class DataBaseConnection
@@ -30,8 +29,7 @@ class DataBaseConnection
         }
     }
 
-    public function __destruct()
-    {
+    public function __destruct() {
         # php will close the db connection automatically when the process ends
         $this->conn = null;
         //mysqli_close($this->conn);
@@ -157,24 +155,18 @@ class DataBaseConnection
 
     public function checkExistenceOfEmail($email)
     {
-        $sql = "SELECT COUNT(*) AS count FROM " . TABLE_USERS . " WHERE email=?";
+        $sql = "SELECT email FROM " . TABLE_USERS . " WHERE email=?";
         $stmt = $this->conn->prepare($sql);
-        $stmt->execute([$email]);
-        if ($stmt->fetch(PDO::FETCH_ASSOC)['count'] > 0) {
-            return true;
-        }
-        return false;
+        $result = $stmt->execute([$email]);
+        return ($result and $stmt->rowCount() === 1);
     }
 
     public function checkExistenceOfUsername($username)
     {
-        $sql = "SELECT COUNT(*) AS count FROM " . TABLE_USERS . " WHERE username=?";
+        $sql = "SELECT username FROM " . TABLE_USERS . " WHERE username=?";
         $stmt = $this->conn->prepare($sql);
-        $stmt->execute([$username]);
-        if ($stmt->fetch(PDO::FETCH_ASSOC)['count'] > 0) {
-            return true;
-        }
-        return false;
+        $result = $stmt->execute([$username]);
+        return ($result and $stmt->rowCount() === 1);
     }
 
     public function editPoll ($uid, $pid, $title, $description)
@@ -338,6 +330,47 @@ class DataBaseConnection
             return $stmt->fetch(PDO::FETCH_ASSOC);
         }
         return false;
+    }
+
+    public function setUserResetCode ($uid, $code)
+    {
+        $sql = "UPDATE " . TABLE_USERS . " SET reset_dt=NOW(), reset_code=? WHERE uid=?";
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute([$code, $uid]);
+    }
+
+    public function updateUserPasswordFromCode ($newpw, $code)
+    {
+        $sql = "UPDATE " . TABLE_USERS . " SET password=?, reset_code=NULL, reset_dt=NULL " .
+            "WHERE reset_code=? AND reset_dt >= NOW() - INTERVAL 10 MINUTE";
+        $stmt = $this->conn->prepare($sql);
+        $result = $stmt->execute([$newpw, $code]);
+        return ($result and $stmt->rowCount() === 1);
+    }
+
+    private function setSetting ( $name, $value )
+    {
+        $sql = "INSERT INTO " . TABLE_SETTINGS . " (name, value) VALUES (?,?) " .
+            "ON DUPLICATE KEY UPDATE name=?, value=?";
+        $stmt = $this->conn->prepare($sql);
+        return $stmt->execute([$name, $value, $name, $value]);
+    }
+
+    private function getSetting ( $name )
+    {
+        $sql = "SELECT ? FROM " . TABLE_SETTINGS;
+        $stmt = $this->conn->prepare($sql);
+        $result = $stmt->execute([$name]);
+        if ($result and $stmt->rowCount() === 1) {
+            return $stmt->fetch(PDO::FETCH_ASSOC)[$name];
+        }
+        return false;
+    }
+
+    public function initializeSettings ()
+    {
+        // If we add other settings, adapt return so it returns false if any fails
+        return $this->setSetting("salt", getRandomCode(32));
     }
 }
 

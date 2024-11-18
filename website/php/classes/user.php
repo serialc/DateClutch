@@ -29,6 +29,11 @@ class User
         unset($this->db);
     }
 
+    public static function getUsernameFromEmail ($email)
+    {
+        return (new self())->db->getUsernameFromEmail($email);
+    }
+
     public function getId()
     {
         if (!isset($this->id)) {
@@ -75,12 +80,31 @@ class User
 
     public function setStatus($new_status)
     {
+        global $log;
+
         if (!is_int($new_status)) {
-            global $log;
             $log->error("Tried to update status for " . $this->username . " to " . $new_status . " but it is not an integer value.");
             return false;
         }
         $this->status = $new_status;
+    }
+
+    public function createAdmin($username, $email, $pwd): bool
+    {
+        global $log;
+
+        if ($this->create($username, $email, DEFAULT_ADMIN_STATUS, $pwd))
+        {
+            // now that the admin is created, initialize the server settings
+            if (!$this->db->initializeSettings()) {
+                $log->error("Initialization of settings failed.");
+            } else {
+                $log->info("Initialization of settings succeeded.");
+            }
+
+            return true;
+        }
+        return false;
     }
 
     public function create($username, $email, $status, $pwd): bool
@@ -234,13 +258,17 @@ class User
         return false;
     }
 
-    public function generateUserPasswordResetCode($email)
+    public function updatePasswordFromCode ( $newpw, $code )
     {
-        $uid = $this->db->getUserIdFromEmail($email);
+        $newpw_hashed = $this->hashPassword($newpw);
+        return $this->db->updateUserPasswordFromCode($newpw_hashed, $code);
+    }
 
-        if ( $uid !== false ) {
-            // returns a code or false
-            return($db->createOrUpdateUserPasswordResetCode($uid));
+    public function createResetCode ( $uid )
+    {
+        $ur_code = getRandomCode(64);
+        if ($this->db->setUserResetCode ($uid, $ur_code)) {
+            return $ur_code;
         }
         return false;
     }

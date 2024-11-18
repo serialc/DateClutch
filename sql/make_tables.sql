@@ -6,6 +6,8 @@ CREATE TABLE users (
     email VARCHAR(64) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     status TINYINT UNSIGNED NOT NULL,
+    reset_dt DATETIME DEFAULT NULL,
+    reset_code VARCHAR(64) DEFAULT NULL,
     PRIMARY KEY (uid)
 );
 
@@ -34,4 +36,9 @@ CREATE TABLE pollusers (
     pid MEDIUMINT UNSIGNED,
     notifications TINYINT UNSIGNED NOT NULL,
     PRIMARY KEY (uid, pid)
+);
+
+CREATE TABLE settings (
+    name VARCHAR(12) PRIMARY KEY,
+    value VARCHAR(64) NOT NULL
 );

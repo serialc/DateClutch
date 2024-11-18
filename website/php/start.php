@@ -11,15 +11,14 @@ if ($user->count() === 0) {
     if (isset($_POST['adminUsername'])) {
 
         // Process submission
-        if ($user->create(
+        if ($user->createAdmin(
                 filter_input(INPUT_POST, 'adminUsername'),
                 filter_input(INPUT_POST, 'adminEmail'),
-                DEFAULT_ADMIN_STATUS,
                 filter_input(INPUT_POST, 'inputPassword')
         )) {
             echo "<p>Admin user <strong>" . $user->getName() . "</strong> created.<br>Please log-in.</p>";
         } else {
-            echo '<div class="alert alert-danger" role="alert"> Failed to create admin!</div>';
+            printAlert("Failed to create admin!");
         }
     } else {
         // Show admin account creation form

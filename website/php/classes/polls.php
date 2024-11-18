@@ -206,7 +206,7 @@ class Poll
             '<span for="pemail" class="input-group-text">Email</span>' .
             '<input type="email" class="form-control" id="pemail" name="pemail" aria-lable="emailHelp" maxlength="128" value="' . (isset($_POST['pemail']) ? $_POST['pemail'] : '') . '">' .
             '</div>' .
-            '<divid="emailHelp" class="form-text text-muted fs-6 mb-3">Optional. Not stored. Only used to send you a selection confirmation email.</div>';
+            '<divid="emailHelp" class="form-text text-muted fs-6 mb-3">Optional. Not stored. Only used to send you a confirmation email with your date selection.</div>';
 
         // Display the submit button
         echo '<div class="text-end">' .
