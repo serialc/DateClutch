@@ -2,3 +2,5 @@ vendor
 logs
 config.php
 *.swp
+php-error.log
+composer.lock
