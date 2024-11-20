@@ -191,7 +191,7 @@ class Poll
             $date_str = $date->format('Y-m-d');
             // was this date selected/checked?
             $checked = (isset($_POST['pdate']) and strcmp($_POST['pdate'], $date_str) == 0) ? 'checked' : '';
-            echo '<div class="col-lg-2 col-md-4 col-sm-6 mb-1">' .
+            echo '<div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-1">' .
                 '<input type="radio" class="btn-check" name="pdate" ' .
                 'value="' . $date_str . '" id="' . $date_str . '" autocomplete="off" ' .
                 $checked . '><label class="btn btn-outline-success w-100" for="' . $date_str . '">' .

@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col bg-dark text-light mb-4">
-        <h2>Making date clutching easy.</h2>
+        <h2>Making date clutching easy</h2>
     </div>
 </div>
 

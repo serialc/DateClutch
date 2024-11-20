@@ -34,6 +34,20 @@ class User
         return (new self())->db->getUsernameFromEmail($email);
     }
 
+    public static function createInvitation ()
+    {
+        $inv_code = getRandomCode(64);
+        if ((new self())->db->createUserInvitation($inv_code)) {
+            return $inv_code;
+        }
+        return false;
+    }
+
+    public static function evaluateInvitation ($inv_code)
+    {
+        return ((new self())->db->evaluateUserInvitation($inv_code));
+    }
+
     public function getId()
     {
         if (!isset($this->id)) {
@@ -50,19 +64,25 @@ class User
         return $this->username;
     }
 
-    public function setName($new_username) {
+    public function setName ($new_username)
+    {
         // if existing name is the same as the new, then just return true
         if ($this->username === $new_username) {
-            return true;
+            return;
         }
 
-        // check it doesn't exist already
-        if ($this->db->userExists($username)) {
-            return false;
-        }
-
-        // ok, overwrite username in object (not yet in db)
+        // overwrite username in object (not yet in db)
         $this->username = $new_username;
+    }
+
+    public function setEmail ($new_email)
+    {
+        if ($this->email === $new_email) {
+            return;
+        }
+
+        // overwrite email in object (not yet in db)
+        $this->email = $new_email;
     }
 
     public function getEmail()
@@ -78,7 +98,7 @@ class User
         return $this->status;
     }
 
-    public function setStatus($new_status)
+    public function setStatus ($new_status)
     {
         global $log;
 
@@ -89,7 +109,7 @@ class User
         $this->status = $new_status;
     }
 
-    public function createAdmin($username, $email, $pwd): bool
+    public function createAdmin ($username, $email, $pwd): bool
     {
         global $log;
 
@@ -153,14 +173,11 @@ class User
         if ($this->status > MEMBER_STATUS_ADMIN) {
             return "Administrator";
         }
-        if ($this->status > MEMBER_STATUS_EDITOR) {
-            return "Editor";
+        if ($this->status > MEMBER_STATUS_CREATOR) {
+            return "Creator";
         }
-        if ($this->status > MEMBER_STATUS_MODERATOR) {
-            return "Moderator";
-        }
-        if ($this->status > MEMBER_STATUS_CONTRIBUTOR) {
-            return "Contributor";
+        if ($this->status > MEMBER_STATUS_BASIC) {
+            return "Member";
         }
     }
 
@@ -206,16 +223,10 @@ class User
     {
         return $this->db->updateUser(
             $this->username,
-            $this->institute,
             $this->email,
             $this->status,
             $this->password_hash,
             $this->id,
-            $this->ntf_newreg,
-            $this->ntf_newoer,
-            $this->ntf_newqry,
-            $this->ntf_perqry,
-            $this->ntf_oermod
         );
     }
 
@@ -276,6 +287,40 @@ class User
     public function count()
     {
         return $this->db->getNumberOfUsers();
+    }
+
+    public function displayAdminRegistration ()
+    {
+        echo <<< _END
+            <div class="row">
+                <div class="col-md-6 col-lg-4">
+                    <h2>Create administrator account</h2>
+                    <p>To begin using the system, please specify a username and password to manage DateClutch.</p>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <form action="/start" method="post">
+        _END;
+
+        include('../php/layout/user_registration_form.html');
+    }
+
+    public function displayInviteeRegistration ()
+    {
+        echo <<< _END
+            <div class="row">
+                <div class="col-lg-6">
+                    <h2>Register</h2>
+                    <p>Welcome to DateClutch.<br>Let's get you registered.</p>
+                    <p>You should have been provided a registration code.</p>
+                </div>
+                <div class="col-lg-6">
+        _END;
+
+        // define the same url as before to keep the invitation code
+        // when provided
+        echo '<form action="' . $_SERVER['REQUEST_URI'] . '" method="post">';
+
+        include('../php/layout/user_registration_form.html');
     }
 }
 

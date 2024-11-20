@@ -63,7 +63,7 @@ if (isset($req[1])) {
 
     if (!isset($_POST['email'])) {
         // show the email form
-        include('../php/layout/pw_reset_email_form.html');
+        include('../php/layout/pw_reset_email_form.php');
     }
 }
 

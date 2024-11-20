@@ -38,6 +38,12 @@ CREATE TABLE pollusers (
     PRIMARY KEY (uid, pid)
 );
 
+-- Create list of invitations that time out
+CREATE TABLE invitations (
+    code VARCHAR(64) PRIMARY KEY,
+    expires DATETIME NOT NULL
+);
+
 CREATE TABLE settings (
     name VARCHAR(12) PRIMARY KEY,
     value VARCHAR(64) NOT NULL

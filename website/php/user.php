@@ -15,6 +15,10 @@ if ($user->getStatus() >= MEMBER_STATUS_BASIC) {
         $poll->displayEditing();
         break;
 
+    case 'account':
+        include('../php/user/account.php');
+        break;
+
     case 'poll':
         if (isset($req[2])) {
             $poll = Poll::fromCode($req[2]);

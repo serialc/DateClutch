@@ -372,6 +372,23 @@ class DataBaseConnection
         // If we add other settings, adapt return so it returns false if any fails
         return $this->setSetting("salt", getRandomCode(32));
     }
+
+    public function createUserInvitation ($code)
+    {
+        $sql = "INSERT INTO " . TABLE_INVITATIONS . " (code, expires) VALUES (?,NOW() + INTERVAL 10 DAY)";
+        $stmt = $this->conn->prepare($sql);
+        $result = $stmt->execute([$code]);
+        return ($result and $stmt->rowCount() === 1);
+    }
+
+    public function evaluateUserInvitation ($code)
+    {
+        $sql = "DELETE FROM " . TABLE_INVITATIONS . " WHERE " .
+            "code=? AND expires > NOW()";
+        $stmt = $this->conn->prepare($sql);
+        $result = $stmt->execute([$code]);
+        return ($result and $stmt->rowCount() === 1);
+    }
 }
 
 // EOF

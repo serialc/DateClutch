@@ -22,6 +22,10 @@ case 'login':
     include '../php/login.php';
     break;
 
+case 'register':
+    include '../php/register.php';
+    break;
+
 case 'start':
     include '../php/start.php';
     break;
