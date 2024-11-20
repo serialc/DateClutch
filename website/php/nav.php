@@ -1,5 +1,5 @@
 <?php
-// Filename: inc/nav.php
+// Filename: php/nav.php
 // Purpose: Displays nav menu
 
 namespace frakturmedia\clutch;
@@ -14,11 +14,15 @@ END;
 // if user is logged in
 if ($user->getStatus() >= MEMBER_STATUS_BASIC) {
     // New poll
-    echo '        <a href="/user/create" class="nav-link mb-1 text-end" title="Create poll"><button class="btn"><i class="fa fa-plus" aria-hidden="true"></i> New poll</button></a>' . "\n";
+    echo '<a href="/user/create" class="nav-link mb-1 text-end" title="Create poll"><button class="btn"><i class="fa fa-plus" aria-hidden="true"></i> New poll</button></a>';
+
     // Edit polls
-    echo '        <a href="/user/polls" class="nav-link mb-1 text-end" title="View your polls"><button class="btn"><i class="fa fa-list" aria-hidden="true"></i> My polls</button></a>' . "\n";
-    // Logout
-    echo '        <a href="/logout" class="nav-link mb-1 text-end" title="Logout"><button class="btn"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</button></a>' . "\n";
+    echo '<a href="/user/polls" class="nav-link mb-1 text-end" title="View your polls"><button class="btn"><i class="fa fa-list" aria-hidden="true"></i> My polls</button></a>';
+
+    // Account
+    echo '<a href="/user/account" class="nav-link mb-1 text-end" title="View account"><button class="btn"><i class="fa fa-user" aria-hidden="true"></i> Account</button></a>';
+    echo '</div>';
+
 } else {
     // Login
     echo '        <a href="/login" class="nav-link mb-1 text-end" title="Login"><button class="btn"><i class="fa fa-sign-in" aria-hidden="true"></i> Login</button></a>' . "\n";

@@ -85,6 +85,7 @@ class Mail
                 $log->error("Failed to send email notification to " . $email . ' for ' . $title . '.');
         }
     }
+
     public function sendClutcher ($name, $title, $date, $email, $reply_to_email, $reply_to_name)
     {
         global $log;
@@ -103,6 +104,53 @@ class Mail
         if( !$this->send($email, $name, $title, $html, $text) ) {
                 $log->error("Failed to send email notification to " . $email . ' for ' . $title . '.');
         }
+    }
+
+    public function sendPasswordResetUrl ($email, $name, $reset_url)
+    {
+        global $log;
+
+        $html = '<html><body style="font-size: 1.3em; background-color: #212529; padding: 10%; color: #dee2e6;"><center>' .
+            '<p style="color: #dee2e6;">Well hello<strong style="color: #A836FF"> ' . $name .
+            '</strong></span>,</p>' . "\n" .
+            '<p style="color: #dee2e6;">You, or someone being naughty, has stated that you have forgotten your <span style="color: #FFA836;"><strong>DateClutch</strong></span> password.</p>' . "\n" .
+            '<p style="color: #dee2e6;">Ignore this if it was not you.</p>' . "\n" .
+            '<p style="color: #dee2e6;">However, if you <emphasis>have</emphasis> forgotten your password, then you should really consider using a password manager (<a href="https://www.mozilla.org/en-US/firefox/features/password-manager/" style="color: #36ffa8">Firefox/Mozilla</a>, a non-profit, provides one freely!).</p>' . "\n" .
+            '<p style="color: #dee2e6;">Anyway, <a href="' . $reset_url . '" style="color: #36ffa8">here is your link</a> to reset your password - if you need it.</p>' . "\n" .
+            '<p style="color: #dee2e6;"><a href="' . $reset_url . '" style="color: #36ffa8">' . $reset_url . '</a></p>' . "\n" .
+            '</center></body></html>';
+        $text = strip_tags($html);
+
+        if( !$this->send($email, $name, "Password reset request", $html, $text) ) {
+                $log->error("Failed to send password reset email to " . $email . '.');
+        }
+    }
+
+    public function sendInvitation ($name, $email, $code)
+    {
+        global $user;
+
+        $reg_url = 'http://' . $_SERVER['SERVER_NAME'] . '/register/' . $code;
+
+        $html = '<html><body style="font-size: 1.3em; background-color: #212529; padding: 10%; color: #dee2e6;"><center>' .
+            '<p style="color: #dee2e6;">Dear <strong style="color: #A836FF">' . $name .
+            '</strong></span>,<p>' . "\n" .
+            '<p><stron>' . $user->getName() . '</strong> ' .
+            'is inviting you to join <a href="' . $reg_url . '" style="color: #FFA836;"><strong>DateClutch</strong></a> to create date clutching polls.</p>' . "\n" .
+            '<p style="color: #dee2e6;"><a href="' . $reg_url . '" style="color: #36ffa8">Here is your link</a> to register - if you wish to.</p>' . "\n" .
+            '<p style="color: #dee2e6;"><a href="' . $reg_url . '" style="color: #36ffa8">' . $reg_url . '</a></p>' . "\n" .
+            '<p style="color: #dee2e6;">Keep up the good work.</p>' . "\n" .
+            '<p style="color: #dee2e6;">P.S. Your registration invitation self-destructs in 10 days.</p>' . "\n" .
+            '</center></body></html>';
+
+        $text = strip_tags($html);
+
+        $title = $user->getName() . ' sent you a DateClutch invitation';
+
+        if( !$this->send($email, $name, $title, $html, $text) ) {
+            $log->error("Failed to send email invitation to " . $email . ' for ' . $title . '.');
+        }
+        return true;
     }
 }
 

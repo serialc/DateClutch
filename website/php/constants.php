@@ -12,6 +12,8 @@ define("TABLE_USERS", "users");
 define("TABLE_POLLS", "polls");
 define("TABLE_POLLDATES", "polldates");
 define("TABLE_POLLUSERS", "pollusers");
+define("TABLE_SETTINGS", "settings");
+define("TABLE_INVITATIONS", "invitations");
 
 // member types
 define("MEMBER_STATUS_BASIC", 1);

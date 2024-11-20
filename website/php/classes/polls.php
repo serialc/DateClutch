@@ -191,7 +191,7 @@ class Poll
             $date_str = $date->format('Y-m-d');
             // was this date selected/checked?
             $checked = (isset($_POST['pdate']) and strcmp($_POST['pdate'], $date_str) == 0) ? 'checked' : '';
-            echo '<div class="col-lg-2 col-md-4 col-sm-6 mb-1">' .
+            echo '<div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-1">' .
                 '<input type="radio" class="btn-check" name="pdate" ' .
                 'value="' . $date_str . '" id="' . $date_str . '" autocomplete="off" ' .
                 $checked . '><label class="btn btn-outline-success w-100" for="' . $date_str . '">' .
@@ -206,7 +206,7 @@ class Poll
             '<span for="pemail" class="input-group-text">Email</span>' .
             '<input type="email" class="form-control" id="pemail" name="pemail" aria-lable="emailHelp" maxlength="128" value="' . (isset($_POST['pemail']) ? $_POST['pemail'] : '') . '">' .
             '</div>' .
-            '<divid="emailHelp" class="form-text text-muted fs-6 mb-3">Optional. Not stored. Only used to send you a selection confirmation email.</div>';
+            '<divid="emailHelp" class="form-text text-muted fs-6 mb-3">Optional. Not stored. Only used to send you a confirmation email with your date selection.</div>';
 
         // Display the submit button
         echo '<div class="text-end">' .

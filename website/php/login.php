@@ -14,15 +14,11 @@ if (isset($_POST['inputPassword'])) {
     // getName returns false if the user is not logged in
     if (!$user->getName()) {
         // login failed
-        echo <<< _END
-            <div class="alert alert-danger" role="alert">
-                Incorrect username and/or password!
-            </div>
-        _END;
+        printAlert("Incorrect username and/or password!");
     }
 }
 
 // show form
-readfile('../php/layout/login_form.html');
+include('../php/layout/login_form.html');
 
 // EOF
