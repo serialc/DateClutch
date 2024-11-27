@@ -269,7 +269,7 @@ class Poll
             echo '<a href="#/" onclick="' . $jscode_date . '" title="Delete date"><i class="fa fa-trash" aria-hidden="true"></i></a> ' . $date;
             if(!empty($clutcher)) {
                 $jscode_clutcher = "CLU.confirmDateAlter('delete_clutcher', {'pid':" . $this->pid . ",'date':'" . $date . "'})";
-                    echo ' <span id="clutcher_' . $date . '"><a href="#/" onclick="' . $jscode_clutcher . '" title="Delete clutcher"><i class="fa fa-crosshairs" aria-hidden="true"></i></a> ' . $clutcher . '</span>';
+                    echo ' <span id="clutcher_' . $date . '"><a href="#/" onclick="' . $jscode_clutcher . '" title="Erase clutcher"><i class="fa fa-eraser" aria-hidden="true"></i></a> ' . $clutcher . '</span>';
             }
             echo '</div></div>';
         }
