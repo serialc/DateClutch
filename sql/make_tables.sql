@@ -19,6 +19,7 @@ CREATE TABLE polls (
     code VARCHAR(64) NOT NULL,
     admin_code VARCHAR(64) NOT NULL,
     description TEXT,
+    privacy BOOLEAN NOT NULL,
     PRIMARY KEY (pid)
 );
 

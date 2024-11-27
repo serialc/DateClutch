@@ -60,7 +60,7 @@ if (isset($req[1])) {
                     if (isset($valid_email)) {
                         // email confirmation to clutcher
                         $cemail = new Mail();
-                        $cemail->sendClutcher($pname, $poll->getTitle(), $req_date->format('Y-m-d'), $valid_email, $poll->getCreatorEmail(), $poll->getCreatorName());
+                        $cemail->sendClutcher($pname, $poll->getTitle(), $req_date->format('Y-m-d'), $valid_email, $poll->getCreatorEmail(), $poll->getCreatorName(), $poll->isPrivacyMode());
                     }
 
                     // email the poll owner

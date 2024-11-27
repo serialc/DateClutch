@@ -15,6 +15,8 @@ class Poll
     private $admin_code;
     private $description;
     private $dates;
+    private $enhanced_privacy;
+
     private $creator_email;
     private $creator_name;
     private $creator_status;
@@ -57,6 +59,7 @@ class Poll
         }
         return false;
     }
+
     public static function fromCode( $poll_code )
     {
         $instance = new self();
@@ -103,6 +106,7 @@ class Poll
         $this->title = $db_data['title'];
         $this->code = $db_data['code'];
         $this->description = $db_data['description'];
+        $this->enhanced_privacy = $db_data['privacy'] == 1;
     }
 
     private function fillDates ($pdates)
@@ -200,7 +204,7 @@ class Poll
         }
         echo '</div>';
 
-        // get optional email
+        // retrieve notification email addresses
         echo '<h3 class="mt-5">Receive a selection notification?</h3>';
         echo '<div class="col-12 input-group mb-0">' .
             '<span for="pemail" class="input-group-text">Email</span>' .
@@ -240,7 +244,7 @@ class Poll
         // show form if we haven't submitted data yet or there are errors
         if (!isset($_POST['ptitle']) or $submit_error) {
             // haven't implemented notifications (last parameter) yet - leave blank
-            $this->displayEditForm($edit_mode, $this->title, $this->description, $this->dates, '');
+            $this->displayEditForm($edit_mode, $this->title, $this->description, $this->dates, '', $this->enhanced_privacy);
         }
     }
 
@@ -264,12 +268,17 @@ class Poll
         // Show response dates and clutchers
         echo '<div class="row mb-2">';
         foreach($this->dates as $date => $clutcher) {
+
             echo '<div id="date_' . $date . '"class="col-lg-3 col-md-4 col-sm-6 mb-2"><div class="daterow rounded p-1">';
+
             $jscode_date = "CLU.confirmDateAlter('delete_date', {'pid':" . $this->pid . ",'date':'" . $date . "'})";
             echo '<a href="#/" onclick="' . $jscode_date . '" title="Delete date"><i class="fa fa-trash" aria-hidden="true"></i></a> ' . $date;
+
             if(!empty($clutcher)) {
+
                 $jscode_clutcher = "CLU.confirmDateAlter('delete_clutcher', {'pid':" . $this->pid . ",'date':'" . $date . "'})";
-                    echo ' <span id="clutcher_' . $date . '"><a href="#/" onclick="' . $jscode_clutcher . '" title="Erase clutcher"><i class="fa fa-eraser" aria-hidden="true"></i></a> ' . $clutcher . '</span>';
+                echo ' <span id="clutcher_' . $date . '"><a href="#/" onclick="' . $jscode_clutcher . '" title="Erase clutcher"><i class="fa fa-eraser" aria-hidden="true"></i></a> ' . $clutcher . '</span>';
+
             }
             echo '</div></div>';
         }
@@ -326,10 +335,17 @@ class Poll
             }
         }
 
+        // is it an enhanced privacy poll?
+        $enhanced_privacy = false;
+        if (isset($_POST['enprivacy'])) {
+            $enhanced_privacy = true;
+        }
+
         // If everything looks good - copy to instance
         if (!$submit_error) {
             $this->title = $ptitle;
             $this->description = $pdescription;
+            $this->enhanced_privacy = $enhanced_privacy;
 
             // generate random code for poll URL if need
             if (empty($this->code)) {
@@ -339,7 +355,7 @@ class Poll
 
             // If this is a new poll
             if (empty($this->pid)) {
-                if($this->db->createPoll($user->getId(), $this->title, $this->code, $this->admin_code, $this->description, $valid_dates_array, $valid_notify_array)) {
+                if($this->db->createPoll($user->getId(), $this->title, $this->code, $this->admin_code, $this->description, $this->enhanced_privacy, $valid_dates_array, $valid_notify_array)) {
                     $this->showLinks();
                 } else {
                     printAlert("Failed to submit data to DB. Contact the developer.");
@@ -347,8 +363,10 @@ class Poll
                 }
             } else {
                 // If the poll is being edited
-                if($this->db->editPoll($user->getId(), $this->pid, $this->title, $this->description)) {
+                if($this->db->editPoll($user->getId(), $this->pid, $this->title, $this->description, $this->enhanced_privacy)) {
                     printSuccess("Poll updated.");
+                } else {
+                    printAlert("Poll update failed! (Likely because you made no changes)");
                 }
             }
         }
@@ -356,7 +374,7 @@ class Poll
         return $submit_error;
     }
 
-    private function displayEditForm ($edit_mode, $ptitle, $pdescription, $pdates, $pnotifications)
+    private function displayEditForm ($edit_mode, $ptitle, $pdescription, $pdates, $pnotifications, $enhanced_privacy)
     {
         // form and title input
         if ($edit_mode) {
@@ -412,7 +430,25 @@ class Poll
         echo $pnotifications . '">';
 
         echo <<< _END
-                        <small id="notifHelp" class="form-text text-muted">Provide comma separated email addresses of people to be notified when someone submits a poll reponse.</small>
+                <small id="notifHelp" class="form-text text-muted">Provide comma separated email addresses of people to be notified when someone submits a poll reponse.</small>
+            </div>
+        _END;
+
+        // make enhanced privacy available
+        echo <<< _END
+            <div class="col-12 mt-3 mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="enprivacy" value="" name="enprivacy" aria-describedby="notifyEnSecurity"
+        _END;
+        echo ($enhanced_privacy ? 'checked' : '') . '>';
+        echo <<< _END
+                    <label class="form-check-label" for="enprivacy">Enhanced privacy</label><br>
+                    <small id="notifEnSecurity" class="form-text text-muted">Respondent names will not be stored on the server, only emailed to you.</small>
+                </div>
+        _END;
+
+        // submit button and closing html elements
+        echo <<< _END
                         <div class="text-end">
                             <button type="submit" class="btn mt-3">Submit</button>
                         </div>
@@ -425,6 +461,9 @@ class Poll
 
     public function addClutcher ($clutcher, $date)
     {
+        if ($this->enhanced_privacy) {
+            return $this->db->setPollClutcher($this->pid, 'anonymized for privacy', $date);
+        }
         return $this->db->setPollClutcher($this->pid, $clutcher, $date);
     }
 
@@ -495,6 +534,11 @@ class Poll
     public function getTitle ()
     {
         return $this->title;
+    }
+
+    public function isPrivacyMode ()
+    {
+        return $this->enhanced_privacy;
     }
 
     public function getPublicCode ()
