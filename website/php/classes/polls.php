@@ -115,6 +115,15 @@ class Poll
         $this->enhanced_privacy = $db_data['privacy'] == 1;
     }
 
+    public function getCleanDate ($date)
+    {
+        if ($this->contains_dt) {
+            // we don't want seconds to appear unless some nut is using them
+            return preg_replace('/:00$/', '', $date->format('Y-m-d H:i:s'));
+        }
+        return $date->format('Y-m-d');
+    }
+
     private function fillDates ($pdates)
     {
         $this->dates = [];
@@ -304,7 +313,7 @@ class Poll
             echo '<div id="date_' . $date . '"class="col-lg-3 col-md-4 col-sm-6 mb-3"><div class="daterow rounded p-1 h-100">';
 
             $jscode_date = "CLU.confirmDateAlter('delete_date', {'pid':" . $this->pid . ",'date':'" . $date . "'})";
-            echo '<a href="#/" onclick="' . $jscode_date . '" title="Delete date"><i class="fa fa-trash" aria-hidden="true"></i></a> ' . ($this->contains_dt ? preg_replace('/:00$/', '', $thisdate->format('Y-m-d H:i:s')) : $thisdate->format('Y-m-d')) . '<br>';
+            echo '<a href="#/" onclick="' . $jscode_date . '" title="Delete date"><i class="fa fa-trash" aria-hidden="true"></i></a> ' . ($this->getCleanDate($thisdate)) . '<br>';
 
             if(!empty($clutcher)) {
 
@@ -628,11 +637,7 @@ class Poll
                 $thisdate = new \DateTime($date);
 
                 echo '<div class="col-lg-3 col-md-4 col-sm-6 mb-3"><div class="daterow rounded p-2">';
-                if ($this->contains_dt) {
-                    echo preg_replace('/:00$/', '', $thisdate->format('Y-m-d H:i:s')) . '<br>' . $clutcher;
-                } else {
-                    echo $thisdate->format('Y-m-d') . '<br>' . $clutcher;
-                }
+                echo $this->getCleanDate($thisdate) . '<br>' . $clutcher;
                 echo '</div></div>';
                 $clutchers_count += 1;
             }

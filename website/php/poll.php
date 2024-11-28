@@ -60,12 +60,12 @@ if (isset($req[1])) {
                     if (isset($valid_email)) {
                         // email confirmation to clutcher
                         $cemail = new Mail();
-                        $cemail->sendClutcher($pname, $poll->getTitle(), $req_date->format('Y-m-d H:i:s'), $valid_email, $poll->getCreatorEmail(), $poll->getCreatorName(), $poll->isPrivacyMode());
+                        $cemail->sendClutcher($pname, $poll->getTitle(), $poll->getCleanDate($req_date), $valid_email, $poll->getCreatorEmail(), $poll->getCreatorName(), $poll->isPrivacyMode());
                     }
 
                     // email the poll owner
                     $poemail = new Mail();
-                    $poemail->notifyCreator($poll->getCreatorName(), $poll->getTitle(), $pname, $req_date->format('Y-m-d H:i:s'), $poll->getCreatorEmail());
+                    $poemail->notifyCreator($poll->getCreatorName(), $poll->getTitle(), $pname, $poll->getCleanDate($req_date), $poll->getCreatorEmail());
 
                     // provide visual feedback
                     echo "<h2>That's done. Thank you.</h2>";
