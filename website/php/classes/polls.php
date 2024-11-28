@@ -16,6 +16,7 @@ class Poll
     private $description;
     private $dates;
     private $enhanced_privacy;
+    private $contains_dt;
 
     private $creator_email;
     private $creator_name;
@@ -107,13 +108,22 @@ class Poll
         $this->code = $db_data['code'];
         $this->description = $db_data['description'];
         $this->enhanced_privacy = $db_data['privacy'] == 1;
+
     }
 
     private function fillDates ($pdates)
     {
         $this->dates = [];
+        $this->contains_dt = false;
+
         foreach( $pdates as $pd ) {
             $this->dates[$pd['pdate']] = $pd['clutcher'];
+
+            // check all the 'dates' are Y-m-d 'dates' at (midnight) or date-time (not midnight)
+            $thisdate = new \DateTime($pd['pdate']);
+            if ( $thisdate != (new \DateTime($thisdate->format('Y-m-d'))) ) {
+                $this->contains_dt = true;
+            }
         }
     }
         
@@ -153,20 +163,26 @@ class Poll
         // - only show available dates (not clutched)
         // - only show dates after today
         // - sort remaining dates
-        $today = new \DateTime(date('Y-m-d'));
+        $todaynow = new \DateTime(date('Y-m-d H:i:s'));
         $dates = [];
-        foreach ($this->dates as $datestr => $clutcher) {
+
+        // Does the following things:
+        // 1 - Only displays date(times) in the future
+        // 2 - Only displays date(times) available
+        foreach ($this->dates as $dt_str => $clutcher) {
+
             // skip clutched dates
             if (!empty($clutcher)) {
                 continue;
             };
 
-            $thisdate = new \DateTime($datestr);
-            // skip if today or in past
-            if ($thisdate <= $today) {
+            $thisdate = new \DateTime($dt_str);
+
+            // skip datetime if in past
+            if ($thisdate <= $todaynow) {
                 continue;
             }
-            
+
             // add to list of valid dates
             array_push($dates, $thisdate);
         }
@@ -192,14 +208,15 @@ class Poll
                 echo '<h2 class="mt-2"><small>' . $month . '</small></h2>';
             }
 
-            $date_str = $date->format('Y-m-d');
+            $date_str = $date->format('Y-m-d H:i:s');
+
             // was this date selected/checked?
             $checked = (isset($_POST['pdate']) and strcmp($_POST['pdate'], $date_str) == 0) ? 'checked' : '';
-            echo '<div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-1">' .
+            echo '<div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-2">' .
                 '<input type="radio" class="btn-check" name="pdate" ' .
                 'value="' . $date_str . '" id="' . $date_str . '" autocomplete="off" ' .
                 $checked . '><label class="btn btn-outline-success w-100" for="' . $date_str . '">' .
-            $date->format('l, jS') . '</label></div>';
+            $date->format('l, jS') . ($this->contains_dt ? '<br>' . preg_replace('/:00$/', '', $date->format('H:i:s')) : '') . '</label></div>';
 
         }
         echo '</div>';
@@ -232,6 +249,7 @@ class Poll
 
         // check that the user is allowed to edit this poll
         if ( $edit_mode and $user->getId() !== $this->uid ) {
+            printAlert("You do not have access to this poll.");
             return;
         }
 
@@ -244,7 +262,7 @@ class Poll
         // show form if we haven't submitted data yet or there are errors
         if (!isset($_POST['ptitle']) or $submit_error) {
             // haven't implemented notifications (last parameter) yet - leave blank
-            $this->displayEditForm($edit_mode, $this->title, $this->description, $this->dates, '', $this->enhanced_privacy);
+            $this->displayEditForm($edit_mode, $_POST['ptitle'], $_POST['pdescription'], $_POST['pdates'], '', isset($_POST['enprivacy']));
         }
     }
 
@@ -261,7 +279,7 @@ class Poll
         echo '<div class="row mb-2"><div class="col-12 mb-2"><div class="input-group daterow rounded p-1">';
         $jscode_newdate = "CLU.dateAlter('add_date', {'pid':" . $this->pid . ",'date':document.getElementById('new_date').value})";
         echo '<label for="new_date" class="input-group-text">Add new date</label>' .
-            '<input type="date" class="form-control" id="new_date" name="new_date">' .
+            '<input type="datetime-local" class="form-control" id="new_date" name="new_date">' .
             '<button class="btn" type="button" onclick="' . $jscode_newdate . '">Add</button>';
         echo '</div></div></div>';
 
@@ -269,10 +287,12 @@ class Poll
         echo '<div class="row mb-2">';
         foreach($this->dates as $date => $clutcher) {
 
+            $thisdate = new \DateTime($date);
+
             echo '<div id="date_' . $date . '"class="col-lg-3 col-md-4 col-sm-6 mb-2"><div class="daterow rounded p-1">';
 
             $jscode_date = "CLU.confirmDateAlter('delete_date', {'pid':" . $this->pid . ",'date':'" . $date . "'})";
-            echo '<a href="#/" onclick="' . $jscode_date . '" title="Delete date"><i class="fa fa-trash" aria-hidden="true"></i></a> ' . $date;
+            echo '<a href="#/" onclick="' . $jscode_date . '" title="Delete date"><i class="fa fa-trash" aria-hidden="true"></i></a> ' . ($this->contains_dt ? preg_replace('/:00$/', '', $thisdate->format('Y-m-d H:i:s')) : $thisdate->format('Y-m-d')) . '<br>';
 
             if(!empty($clutcher)) {
 
@@ -356,6 +376,7 @@ class Poll
             // If this is a new poll
             if (empty($this->pid)) {
                 if($this->db->createPoll($user->getId(), $this->title, $this->code, $this->admin_code, $this->description, $this->enhanced_privacy, $valid_dates_array, $valid_notify_array)) {
+                    echo '<h2>Created poll</h2>';
                     $this->showLinks();
                 } else {
                     printAlert("Failed to submit data to DB. Contact the developer.");
@@ -365,6 +386,7 @@ class Poll
                 // If the poll is being edited
                 if($this->db->editPoll($user->getId(), $this->pid, $this->title, $this->description, $this->enhanced_privacy)) {
                     printSuccess("Poll updated.");
+                    $this->showLinks();
                 } else {
                     printAlert("Poll update failed! (Likely because you made no changes)");
                 }
@@ -415,7 +437,7 @@ class Poll
         } else {
             // Show textarea input
             echo '<textarea id="pdates" name="pdates" class="form-control mb-0" aria-label="datesHelp" rows="5">' . $pdates . '</textarea>';
-            echo '<small id="datesHelp" class="form-text text-muted">Enter dates in YYYY-MM-DD format in rows or comma separated.</small>';
+            echo '<small id="datesHelp" class="form-text text-muted">Enter either dates (YYYY-MM-DD) or date-times (YYYY-MM-DD HH:MM) in rows or comma-separated.</small>';
         }
 
         echo '</div>';
@@ -424,7 +446,7 @@ class Poll
         echo <<< _END
             <div class="col-12 mb-3">
                 <label for="pnotifications" class="form-label">Notify</label>
-                <input type="text" class="form-control" autofocus="autofocus" id="pnotifications" name="pnotifications" maxlength="256" disabled aria-describedby="notifHelp" value="
+                <input type="text" class="form-control" placeholder="Disabled" id="pnotifications" name="pnotifications" maxlength="256" disabled aria-describedby="notifHelp" value="
         _END;
 
         echo $pnotifications . '">';
@@ -462,7 +484,7 @@ class Poll
     public function addClutcher ($clutcher, $date)
     {
         if ($this->enhanced_privacy) {
-            return $this->db->setPollClutcher($this->pid, 'anonymized for privacy', $date);
+            return $this->db->setPollClutcher($this->pid, ANONYMOUS_NAME, $date);
         }
         return $this->db->setPollClutcher($this->pid, $clutcher, $date);
     }
@@ -480,7 +502,7 @@ class Poll
 
         // remove any empty values and check date validities
         $valid_dates_array = [];
-        $today = new \DateTime(date('Y-m-d'));
+        $todaynow = new \DateTime(date('Y-m-d H:i:s'));
 
         foreach ( $subdates_array as $datestr) {
             $datestr = trim($datestr);
@@ -502,7 +524,7 @@ class Poll
                 continue;
             }
 
-            if ($req_date <= $today) {
+            if ($req_date <= $todaynow) {
                 printAlert("Date " . $datestr . " has passed.");
                 $submit_error = true;
                 continue;
@@ -521,13 +543,12 @@ class Poll
         $poll_results_url = 'http://' . $_SERVER['SERVER_NAME'] . '/results/' . $this->admin_code;
 
         // show the results of form processing
-        echo '<h2>Created poll</h2>';
         echo '<h3>' . $this->title . '</h2>';
         echo '<div class="row"><div class="col fs-5">';
         echo '<div>Visit the <a href="' . $poll_url . '">poll</a></div>';
         echo '<div>Share the poll <button data="' . $poll_url . '" class="btn btn-sm btn-flashes" onclick="CLU.copyUrl(event)">Copy URL</button></div>';
         echo '<div>Edit the <a href="' . $poll_edit_url . '">poll</div>';
-        echo '<div>See the <a href="' . $poll_results_url . '">results</div>';
+        echo '<div>See the <a href="' . $poll_results_url . '">results</a></div>';
         echo "</div></div>";
     }
 
@@ -588,9 +609,18 @@ class Poll
         echo '<div class="row mb-2">';
         $clutchers_count = 0;
         foreach ($this->dates as $date => $clutcher) {
+
+            // only show dates/dt that have been clutched
             if( !empty($clutcher) ) {
-                echo '<div class="col-lg-3 col-md-4 col-sm-6 mb-2"><div class="daterow rounded p-1">';
-                echo $date . ': ' . $clutcher;
+
+                $thisdate = new \DateTime($dt_str);
+
+                echo '<div class="col-lg-3 col-md-4 col-sm-6 mb-3"><div class="daterow rounded p-2">';
+                if ($this->contains_dt) {
+                    echo preg_replace('/:00$/', '', $thisdate->format('Y-m-d H:i:s')) . '<br>' . $clutcher;
+                } else {
+                    echo $thisdate->format('Y-m-d') . '<br>' . $clutcher;
+                }
                 echo '</div></div>';
                 $clutchers_count += 1;
             }

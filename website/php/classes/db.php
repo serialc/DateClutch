@@ -195,7 +195,7 @@ class DataBaseConnection
         $bound_variables_array = [];
         foreach ($dates as $pdate) {
             // convert the DateTime object to a string of format YYYY-MM-DD
-            array_push($bound_variables_array, $pollid, $pdate->format('Y-m-d'));
+            array_push($bound_variables_array, $pollid, $pdate->format('Y-m-d H:i:s'));
         }
 
         // use pid to associate dates with poll

@@ -26,7 +26,7 @@ CREATE TABLE polls (
 -- Associate dates with a poll - and participant with a poll date
 CREATE TABLE polldates (
     pid MEDIUMINT UNSIGNED NOT NULL,
-    pdate DATE NOT NULL,
+    pdate DATETIME NOT NULL,
     clutcher VARCHAR(128),
     PRIMARY KEY (pid, pdate)
 );

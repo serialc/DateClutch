@@ -11,3 +11,15 @@ Grab the date you want.
 6. You may require installing a connector between MariaDB and PHP.
 
 Go to the home page /start and create the administrator account.
+
+# Upgrade
+
+Need to make a few changes to DB concurrently with code update:
+
+For polldates - adding datetimes:
+
+ALTER TABLE polldates MODIFY pdate DATETIME NOT NULL;
+
+For polls - enhanced privacy:
+
+ALTER TABLE polls ADD COLUMN privacy BOOL NOT NULL;
