@@ -54,18 +54,18 @@ if (isset($req[1])) {
             }
 
             if (!$submit_error) {
-                if ($poll->addClutcher($pname, $req_date->format('Y-m-d'))) {
+                if ($poll->addClutcher($pname, $req_date->format('Y-m-d H:i:s'))) {
                     // DB update succesfull
 
                     if (isset($valid_email)) {
                         // email confirmation to clutcher
                         $cemail = new Mail();
-                        $cemail->sendClutcher($pname, $poll->getTitle(), $req_date->format('Y-m-d'), $valid_email, $poll->getCreatorEmail(), $poll->getCreatorName());
+                        $cemail->sendClutcher($pname, $poll->getTitle(), $req_date->format('Y-m-d H:i:s'), $valid_email, $poll->getCreatorEmail(), $poll->getCreatorName(), $poll->isPrivacyMode());
                     }
 
                     // email the poll owner
                     $poemail = new Mail();
-                    $poemail->notifyCreator($poll->getCreatorName(), $poll->getTitle(), $pname, $req_date->format('Y-m-d'), $poll->getCreatorEmail());
+                    $poemail->notifyCreator($poll->getCreatorName(), $poll->getTitle(), $pname, $req_date->format('Y-m-d H:i:s'), $poll->getCreatorEmail());
 
                     // provide visual feedback
                     echo "<h2>That's done. Thank you.</h2>";

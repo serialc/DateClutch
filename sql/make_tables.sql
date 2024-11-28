@@ -19,13 +19,14 @@ CREATE TABLE polls (
     code VARCHAR(64) NOT NULL,
     admin_code VARCHAR(64) NOT NULL,
     description TEXT,
+    privacy BOOLEAN NOT NULL,
     PRIMARY KEY (pid)
 );
 
 -- Associate dates with a poll - and participant with a poll date
 CREATE TABLE polldates (
     pid MEDIUMINT UNSIGNED NOT NULL,
-    pdate DATE NOT NULL,
+    pdate DATETIME NOT NULL,
     clutcher VARCHAR(128),
     PRIMARY KEY (pid, pdate)
 );

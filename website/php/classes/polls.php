@@ -15,6 +15,9 @@ class Poll
     private $admin_code;
     private $description;
     private $dates;
+    private $enhanced_privacy;
+    private $contains_dt;
+
     private $creator_email;
     private $creator_name;
     private $creator_status;
@@ -57,6 +60,7 @@ class Poll
         }
         return false;
     }
+
     public static function fromCode( $poll_code )
     {
         $instance = new self();
@@ -85,9 +89,12 @@ class Poll
 
         // if the poll details were retrieved, then also get the dates
         if ($poll !== false) {
+
             $this->fillDetails($poll);
+
             $poll_dates = $this->db->retrievePollDates($this->pid);
             $this->fillDates($poll_dates);
+
             return true;
         }
 
@@ -102,14 +109,25 @@ class Poll
         $this->uid = $db_data['uid'];
         $this->title = $db_data['title'];
         $this->code = $db_data['code'];
+        $this->admin_code = $db_data['admin_code'];
         $this->description = $db_data['description'];
+        // convert 0/1 to false/true
+        $this->enhanced_privacy = $db_data['privacy'] == 1;
     }
 
     private function fillDates ($pdates)
     {
         $this->dates = [];
+        $this->contains_dt = false;
+
         foreach( $pdates as $pd ) {
             $this->dates[$pd['pdate']] = $pd['clutcher'];
+
+            // check all the 'dates' are Y-m-d 'dates' at (midnight) or date-time (not midnight)
+            $thisdate = new \DateTime($pd['pdate']);
+            if ( $thisdate != (new \DateTime($thisdate->format('Y-m-d'))) ) {
+                $this->contains_dt = true;
+            }
         }
     }
         
@@ -149,20 +167,26 @@ class Poll
         // - only show available dates (not clutched)
         // - only show dates after today
         // - sort remaining dates
-        $today = new \DateTime(date('Y-m-d'));
+        $todaynow = new \DateTime(date('Y-m-d H:i:s'));
         $dates = [];
-        foreach ($this->dates as $datestr => $clutcher) {
+
+        // Does the following things:
+        // 1 - Only displays date(times) in the future
+        // 2 - Only displays date(times) available
+        foreach ($this->dates as $dt_str => $clutcher) {
+
             // skip clutched dates
             if (!empty($clutcher)) {
                 continue;
             };
 
-            $thisdate = new \DateTime($datestr);
-            // skip if today or in past
-            if ($thisdate <= $today) {
+            $thisdate = new \DateTime($dt_str);
+
+            // skip datetime if in past
+            if ($thisdate <= $todaynow) {
                 continue;
             }
-            
+
             // add to list of valid dates
             array_push($dates, $thisdate);
         }
@@ -188,20 +212,21 @@ class Poll
                 echo '<h2 class="mt-2"><small>' . $month . '</small></h2>';
             }
 
-            $date_str = $date->format('Y-m-d');
+            $date_str = $date->format('Y-m-d H:i:s');
+
             // was this date selected/checked?
             $checked = (isset($_POST['pdate']) and strcmp($_POST['pdate'], $date_str) == 0) ? 'checked' : '';
-            echo '<div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-1">' .
+            echo '<div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-2">' .
                 '<input type="radio" class="btn-check" name="pdate" ' .
                 'value="' . $date_str . '" id="' . $date_str . '" autocomplete="off" ' .
                 $checked . '><label class="btn btn-outline-success w-100" for="' . $date_str . '">' .
-            $date->format('l, jS') . '</label></div>';
+            $date->format('l, jS') . ($this->contains_dt ? '<br>' . preg_replace('/:00$/', '', $date->format('H:i:s')) : '') . '</label></div>';
 
         }
         echo '</div>';
 
-        // get optional email
-        echo '<h3 class="mt-5">Receive a selection notification?</h3>';
+        // retrieve notification email addresses
+        echo '<h3 class="mt-5">Would you like a confirmation email?</h3>';
         echo '<div class="col-12 input-group mb-0">' .
             '<span for="pemail" class="input-group-text">Email</span>' .
             '<input type="email" class="form-control" id="pemail" name="pemail" aria-lable="emailHelp" maxlength="128" value="' . (isset($_POST['pemail']) ? $_POST['pemail'] : '') . '">' .
@@ -228,6 +253,7 @@ class Poll
 
         // check that the user is allowed to edit this poll
         if ( $edit_mode and $user->getId() !== $this->uid ) {
+            printAlert("You do not have access to this poll.");
             return;
         }
 
@@ -237,10 +263,15 @@ class Poll
             $submit_error = $this->parseEditSubmission();
         }
 
-        // show form if we haven't submitted data yet or there are errors
-        if (!isset($_POST['ptitle']) or $submit_error) {
-            // haven't implemented notifications (last parameter) yet - leave blank
-            $this->displayEditForm($edit_mode, $this->title, $this->description, $this->dates, '');
+        // show form if we haven't submitted data yet
+        // this is for new polls and editing polls
+        if (!isset($_POST['ptitle'])) {
+            // haven't implemented notifications (the '' parameter) yet 
+            $this->displayEditForm($edit_mode, $this->title, $this->description, $this->dates, '', $this->enhanced_privacy);
+        }
+        // show POSTed form that has errors
+        if ($submit_error) {
+            $this->displayEditForm($edit_mode, $_POST['ptitle'], $_POST['pdescription'], $_POST['pdates'], '', isset($_POST['enprivacy']) );
         }
     }
 
@@ -254,22 +285,32 @@ class Poll
         }
 
         // show the new date creator option
-        echo '<div class="row mb-2"><div class="col-12 mb-2"><div class="input-group daterow rounded p-1">';
+        echo '<div class="row mb-2"><div class="col-12 mb-2">';
+        echo '<h3>' . $this->getTitle() . '</h3>';
+        echo '<p>Go to the <a href="' . $this->getPublicUrl() . '">poll</a></p>';
+        echo '<div class="input-group daterow rounded p-1">';
         $jscode_newdate = "CLU.dateAlter('add_date', {'pid':" . $this->pid . ",'date':document.getElementById('new_date').value})";
         echo '<label for="new_date" class="input-group-text">Add new date</label>' .
-            '<input type="date" class="form-control" id="new_date" name="new_date">' .
+            '<input type="datetime-local" class="form-control" id="new_date" name="new_date">' .
             '<button class="btn" type="button" onclick="' . $jscode_newdate . '">Add</button>';
         echo '</div></div></div>';
 
         // Show response dates and clutchers
         echo '<div class="row mb-2">';
         foreach($this->dates as $date => $clutcher) {
-            echo '<div id="date_' . $date . '"class="col-lg-3 col-md-4 col-sm-6 mb-2"><div class="daterow rounded p-1">';
+
+            $thisdate = new \DateTime($date);
+
+            echo '<div id="date_' . $date . '"class="col-lg-3 col-md-4 col-sm-6 mb-3"><div class="daterow rounded p-1 h-100">';
+
             $jscode_date = "CLU.confirmDateAlter('delete_date', {'pid':" . $this->pid . ",'date':'" . $date . "'})";
-            echo '<a href="#/" onclick="' . $jscode_date . '" title="Delete date"><i class="fa fa-trash" aria-hidden="true"></i></a> ' . $date;
+            echo '<a href="#/" onclick="' . $jscode_date . '" title="Delete date"><i class="fa fa-trash" aria-hidden="true"></i></a> ' . ($this->contains_dt ? preg_replace('/:00$/', '', $thisdate->format('Y-m-d H:i:s')) : $thisdate->format('Y-m-d')) . '<br>';
+
             if(!empty($clutcher)) {
+
                 $jscode_clutcher = "CLU.confirmDateAlter('delete_clutcher', {'pid':" . $this->pid . ",'date':'" . $date . "'})";
-                    echo ' <span id="clutcher_' . $date . '"><a href="#/" onclick="' . $jscode_clutcher . '" title="Delete clutcher"><i class="fa fa-crosshairs" aria-hidden="true"></i></a> ' . $clutcher . '</span>';
+                echo ' <span id="clutcher_' . $date . '"><a href="#/" onclick="' . $jscode_clutcher . '" title="Erase clutcher"><i class="fa fa-eraser" aria-hidden="true"></i></a> ' . $clutcher . '</span>';
+
             }
             echo '</div></div>';
         }
@@ -326,10 +367,17 @@ class Poll
             }
         }
 
+        // is it an enhanced privacy poll?
+        $enhanced_privacy = false;
+        if (isset($_POST['enprivacy'])) {
+            $enhanced_privacy = true;
+        }
+
         // If everything looks good - copy to instance
         if (!$submit_error) {
             $this->title = $ptitle;
             $this->description = $pdescription;
+            $this->enhanced_privacy = $enhanced_privacy;
 
             // generate random code for poll URL if need
             if (empty($this->code)) {
@@ -339,7 +387,8 @@ class Poll
 
             // If this is a new poll
             if (empty($this->pid)) {
-                if($this->db->createPoll($user->getId(), $this->title, $this->code, $this->admin_code, $this->description, $valid_dates_array, $valid_notify_array)) {
+                if($this->db->createPoll($user->getId(), $this->title, $this->code, $this->admin_code, $this->description, $this->enhanced_privacy, $valid_dates_array, $valid_notify_array)) {
+                    echo '<h2>Created poll</h2>';
                     $this->showLinks();
                 } else {
                     printAlert("Failed to submit data to DB. Contact the developer.");
@@ -347,8 +396,11 @@ class Poll
                 }
             } else {
                 // If the poll is being edited
-                if($this->db->editPoll($user->getId(), $this->pid, $this->title, $this->description)) {
+                if($this->db->editPoll($user->getId(), $this->pid, $this->title, $this->description, $this->enhanced_privacy)) {
                     printSuccess("Poll updated.");
+                    $this->showLinks();
+                } else {
+                    printAlert("Poll update failed! (Likely because you made no changes)");
                 }
             }
         }
@@ -356,7 +408,7 @@ class Poll
         return $submit_error;
     }
 
-    private function displayEditForm ($edit_mode, $ptitle, $pdescription, $pdates, $pnotifications)
+    private function displayEditForm ($edit_mode, $ptitle, $pdescription, $pdates, $pnotifications, $enhanced_privacy)
     {
         // form and title input
         if ($edit_mode) {
@@ -397,7 +449,7 @@ class Poll
         } else {
             // Show textarea input
             echo '<textarea id="pdates" name="pdates" class="form-control mb-0" aria-label="datesHelp" rows="5">' . $pdates . '</textarea>';
-            echo '<small id="datesHelp" class="form-text text-muted">Enter dates in YYYY-MM-DD format in rows or comma separated.</small>';
+            echo '<small id="datesHelp" class="form-text text-muted">Enter either dates (YYYY-MM-DD) or date-times (YYYY-MM-DD HH:MM) in rows or comma-separated.</small>';
         }
 
         echo '</div>';
@@ -406,13 +458,31 @@ class Poll
         echo <<< _END
             <div class="col-12 mb-3">
                 <label for="pnotifications" class="form-label">Notify</label>
-                <input type="text" class="form-control" autofocus="autofocus" id="pnotifications" name="pnotifications" maxlength="256" disabled aria-describedby="notifHelp" value="
+                <input type="text" class="form-control" placeholder="Disabled" id="pnotifications" name="pnotifications" maxlength="256" disabled aria-describedby="notifHelp" value="
         _END;
 
         echo $pnotifications . '">';
 
         echo <<< _END
-                        <small id="notifHelp" class="form-text text-muted">Provide comma separated email addresses of people to be notified when someone submits a poll reponse.</small>
+                <small id="notifHelp" class="form-text text-muted">Provide comma separated email addresses of people to be notified when someone submits a poll reponse.</small>
+            </div>
+        _END;
+
+        // make enhanced privacy available
+        echo <<< _END
+            <div class="col-12 mt-3 mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="enprivacy" value="" name="enprivacy" aria-describedby="notifyEnSecurity"
+        _END;
+        echo ($enhanced_privacy ? 'checked' : '') . '>';
+        echo <<< _END
+                    <label class="form-check-label" for="enprivacy">Enhanced privacy</label><br>
+                    <small id="notifEnSecurity" class="form-text text-muted">Respondent names will not be stored on the server, only emailed to you.</small>
+                </div>
+        _END;
+
+        // submit button and closing html elements
+        echo <<< _END
                         <div class="text-end">
                             <button type="submit" class="btn mt-3">Submit</button>
                         </div>
@@ -425,6 +495,9 @@ class Poll
 
     public function addClutcher ($clutcher, $date)
     {
+        if ($this->enhanced_privacy) {
+            return $this->db->setPollClutcher($this->pid, ANONYMOUS_NAME, $date);
+        }
         return $this->db->setPollClutcher($this->pid, $clutcher, $date);
     }
 
@@ -441,7 +514,7 @@ class Poll
 
         // remove any empty values and check date validities
         $valid_dates_array = [];
-        $today = new \DateTime(date('Y-m-d'));
+        $todaynow = new \DateTime(date('Y-m-d H:i:s'));
 
         foreach ( $subdates_array as $datestr) {
             $datestr = trim($datestr);
@@ -463,7 +536,7 @@ class Poll
                 continue;
             }
 
-            if ($req_date <= $today) {
+            if ($req_date <= $todaynow) {
                 printAlert("Date " . $datestr . " has passed.");
                 $submit_error = true;
                 continue;
@@ -482,19 +555,23 @@ class Poll
         $poll_results_url = 'http://' . $_SERVER['SERVER_NAME'] . '/results/' . $this->admin_code;
 
         // show the results of form processing
-        echo '<h2>Created poll</h2>';
         echo '<h3>' . $this->title . '</h2>';
         echo '<div class="row"><div class="col fs-5">';
         echo '<div>Visit the <a href="' . $poll_url . '">poll</a></div>';
         echo '<div>Share the poll <button data="' . $poll_url . '" class="btn btn-sm btn-flashes" onclick="CLU.copyUrl(event)">Copy URL</button></div>';
-        echo '<div>Edit the <a href="' . $poll_edit_url . '">poll</div>';
-        echo '<div>See the <a href="' . $poll_results_url . '">results</div>';
+        echo '<div>Edit the <a href="' . $poll_edit_url . '">poll</a></div>';
+        echo '<div>See the <a href="' . $poll_results_url . '">results</a></div>';
         echo "</div></div>";
     }
 
     public function getTitle ()
     {
         return $this->title;
+    }
+
+    public function isPrivacyMode ()
+    {
+        return $this->enhanced_privacy;
     }
 
     public function getPublicCode ()
@@ -544,16 +621,25 @@ class Poll
         echo '<div class="row mb-2">';
         $clutchers_count = 0;
         foreach ($this->dates as $date => $clutcher) {
+
+            // only show dates/dt that have been clutched
             if( !empty($clutcher) ) {
-                echo '<div class="col-lg-3 col-md-4 col-sm-6 mb-2"><div class="daterow rounded p-1">';
-                echo $date . ': ' . $clutcher;
+
+                $thisdate = new \DateTime($date);
+
+                echo '<div class="col-lg-3 col-md-4 col-sm-6 mb-3"><div class="daterow rounded p-2">';
+                if ($this->contains_dt) {
+                    echo preg_replace('/:00$/', '', $thisdate->format('Y-m-d H:i:s')) . '<br>' . $clutcher;
+                } else {
+                    echo $thisdate->format('Y-m-d') . '<br>' . $clutcher;
+                }
                 echo '</div></div>';
                 $clutchers_count += 1;
             }
         }
         echo '</div>';
 
-        echo '<h3>' . $clutchers_count . ' people have clutched a date</h3>';
+        echo '<p>' . $clutchers_count . ' people have clutched a date</p>';
         echo ($clutchers_count === 0) ? '<p class="accent1">Don\'t let that make you sad</p>' : "";
     }
 }

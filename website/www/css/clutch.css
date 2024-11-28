@@ -84,6 +84,7 @@ a:hover, [type="submit"].btn:hover {
 .daterow {
     background-color: #1a1d20;
     font-size: 0.9em;
+    text-align: center;
 }
 
 .daterow:hover {

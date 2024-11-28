@@ -44,7 +44,7 @@ class Mail
         $this->mail->Port       = EMAIL_PORT;
     }
 
-    public function send($email, $to_name, $subject, $html, $text)
+    public function send($email, $to_name, $subject, $html, $text, $anon_logging)
     {
         global $log;
 
@@ -60,7 +60,7 @@ class Mail
             $this->mail->AltBody = $text;
 
             $this->mail->send();
-            $log->info("Sent email to $to_name with subject \"$subject\"");
+            $log->info('Sent email to ' . ($anon_logging ? 'someone' : $to_name) . ' with subject "$subject"');
         } catch (Exception $e) {
             $log->error("Failed to send an email. Mailer error: {$this->mail->ErrorInfo}");
             return false;
@@ -71,6 +71,8 @@ class Mail
 
     public function notifyCreator ($name, $title, $clutcher_name, $date, $email)
     {
+        global $log;
+
         $html = '<html><body style="font-size: 1.3em; background-color: #212529; padding: 10%; color: #dee2e6;"><center>' .
             '<p style="color: #dee2e6;">Dear <strong style="color: #A836FF">' . $name .
             '</strong></span>,<p>' . "\n" .
@@ -81,12 +83,12 @@ class Mail
 
         $text = strip_tags($html);
 
-        if( !$this->send($email, $name, $title, $html, $text) ) {
+        if( !$this->send($email, $name, $title, $html, $text, false) ) {
                 $log->error("Failed to send email notification to " . $email . ' for ' . $title . '.');
         }
     }
 
-    public function sendClutcher ($name, $title, $date, $email, $reply_to_email, $reply_to_name)
+    public function sendClutcher ($name, $title, $date, $email, $reply_to_email, $reply_to_name, $privacy_mode)
     {
         global $log;
 
@@ -101,8 +103,9 @@ class Mail
 
         $text = strip_tags($html);
 
-        if( !$this->send($email, $name, $title, $html, $text) ) {
-                $log->error("Failed to send email notification to " . $email . ' for ' . $title . '.');
+        if( !$this->send($email, $name, $title, $html, $text, $privacy_mode) ) {
+            $log->error("Failed to send email notification to " .
+                ($privacy_mode ? '-redacted due to poll privacy mode-' : $email) . ' for ' . $title . '.');
         }
     }
 
@@ -121,7 +124,7 @@ class Mail
             '</center></body></html>';
         $text = strip_tags($html);
 
-        if( !$this->send($email, $name, "Password reset request", $html, $text) ) {
+        if( !$this->send($email, $name, "Password reset request", $html, $text, false) ) {
                 $log->error("Failed to send password reset email to " . $email . '.');
         }
     }
@@ -147,7 +150,7 @@ class Mail
 
         $title = $user->getName() . ' sent you a DateClutch invitation';
 
-        if( !$this->send($email, $name, $title, $html, $text) ) {
+        if( !$this->send($email, $name, $title, $html, $text, false) ) {
             $log->error("Failed to send email invitation to " . $email . ' for ' . $title . '.');
         }
         return true;

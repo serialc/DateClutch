@@ -15,7 +15,7 @@ if (isset($req[0]) and strcmp($req[0], "api") === 0) {
 
 include('../php/layout/head.php');
 
-echo '<div id="content" class="container mt-3">';
+echo '<div id="content" class="container mb-5">';
 
 switch ($req[0]) {
 case 'login':

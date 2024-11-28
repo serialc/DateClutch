@@ -169,22 +169,23 @@ class DataBaseConnection
         return ($result and $stmt->rowCount() === 1);
     }
 
-    public function editPoll ($uid, $pid, $title, $description)
+    public function editPoll ($uid, $pid, $title, $description, $priv_mode)
     {
         $sql = "UPDATE " . TABLE_POLLS .
-            " SET title=?, description=? WHERE uid=? AND pid=?";
+            " SET title=?, description=?, privacy=? WHERE uid=? AND pid=?";
+
         $stmt = $this->conn->prepare($sql);
-        $result = $stmt->execute([$title, $description, $uid, $pid]);
+        $result = $stmt->execute([$title, $description, intval($priv_mode), $uid, $pid]);
         // check the query result and that at least one row was updated
         return ($result and $stmt->rowCount() === 1);
     }
 
-    public function createPoll ($uid, $title, $code, $admin_code, $description, $dates, $emails)
+    public function createPoll ($uid, $title, $code, $admin_code, $description, $priv_mode, $dates, $emails)
     {
         // add the basic poll info to the table
-        $sql = "INSERT INTO " . TABLE_POLLS . " (uid, title, code, admin_code, description) VALUES (?,?,?,?,?)";
+        $sql = "INSERT INTO " . TABLE_POLLS . " (uid, title, code, admin_code, description, privacy) VALUES (?,?,?,?,?,?)";
         $stmt = $this->conn->prepare($sql);
-        if(!$stmt->execute([$uid, $title, $code, $admin_code, $description]) ) {
+        if (!$stmt->execute([$uid, $title, $code, $admin_code, $description, intval($priv_mode)]) ) {
             return false;
         }
 
@@ -194,7 +195,7 @@ class DataBaseConnection
         $bound_variables_array = [];
         foreach ($dates as $pdate) {
             // convert the DateTime object to a string of format YYYY-MM-DD
-            array_push($bound_variables_array, $pollid, $pdate->format('Y-m-d'));
+            array_push($bound_variables_array, $pollid, $pdate->format('Y-m-d H:i:s'));
         }
 
         // use pid to associate dates with poll
