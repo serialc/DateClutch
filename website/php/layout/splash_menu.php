@@ -26,7 +26,7 @@
     <div class="col-md-1 mt-5"></div>
     <div class="col-md-8 mt-5">
         <h3>What is date clutching?</h3>
-        <p>You want people to grab one date from a set of options.</p>
+        <p>You want people to grab one date (or time) from a defined set.</p>
         <ul>
             <li>No one should grab multiple dates.</li>
             <li>No date should be selected by multiple people.</li>

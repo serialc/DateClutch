@@ -16,7 +16,7 @@ if (!empty($admin_poll_code)) {
 
     echo '<h2>Poll results</h2>';
     echo '<h3>' . $poll->getTitle() . '</h3>';
-    echo '<p>Go to the <a href="' . $poll->getPublicUrl() . '">poll</a>.</p>';
+    echo '<p>Go to the <a href="' . $poll->getPublicUrl() . '">poll</a></p>';
     
     $poll->displayResults();
 }

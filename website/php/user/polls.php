@@ -15,7 +15,7 @@ foreach ($polls as $poll) {
     $poll_edit_url = 'http://' . $_SERVER['SERVER_NAME'] . '/user/poll/' . $poll['code'];
     $poll_admin_url = 'http://' . $_SERVER['SERVER_NAME'] . '/results/' . $poll['admin_code'];
 
-    echo '<p><a href="' . $poll_url . '">' . $poll['title'] . '</a> [<a href="' . $poll_admin_url . '">Results</a>]</p>';
+    echo '<p><a href="' . $poll_url . '">' . $poll['title'] . '</a> - <a href="' . $poll_admin_url . '">Results</a></p>';
 }
 echo '</div></div>';
 
