@@ -71,6 +71,8 @@ class Mail
 
     public function notifyCreator ($name, $title, $clutcher_name, $date, $email)
     {
+        global $log;
+
         $html = '<html><body style="font-size: 1.3em; background-color: #212529; padding: 10%; color: #dee2e6;"><center>' .
             '<p style="color: #dee2e6;">Dear <strong style="color: #A836FF">' . $name .
             '</strong></span>,<p>' . "\n" .
