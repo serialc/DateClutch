@@ -16,7 +16,7 @@
     <body>
         <nav class="navbar navbar-expand-lg">
           <div class="container">
-            <a href="/"><h1><i class="fa fa-hand-rock-o" aria-hidden="true"></i> DateClutch</h1></a>
+            <a href="/"><h1><i class="fa fa-hand-rock-o me-2" aria-hidden="true"></i> DateClutch</h1></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
               <span class="navbar-toggler-icon"></span>
             </button>

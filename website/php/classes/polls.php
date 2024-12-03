@@ -205,8 +205,16 @@ class Poll
 
         // show dates
         echo '<div class="row">';
+
+        if (count($dates) === 0) {
+            echo '<div class="col">';
+            printAlert("Unfortunately no dates are available. If this is unexpect, contact the person who sent you the poll.");
+            echo '</div>';
+        }
+
         $year = '';
         $month = '';
+
         foreach ($dates as $date) {
 
             $this_year = $date->format('Y');

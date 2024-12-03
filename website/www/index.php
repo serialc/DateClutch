@@ -46,6 +46,18 @@ case 'password_reset':
     include '../php/pw_reset.php';
     break;
 
+case 'terms_of_use':
+    include '../php/layout/terms_of_use.html';
+    break;
+
+case 'privacy_policy':
+    include '../php/layout/priv_policy.html';
+    break;
+    
+case 'cookies_policy':
+    include '../php/layout/cookies_policy.html';
+    break;
+
 default:
     include '../php/main.php';
 }
