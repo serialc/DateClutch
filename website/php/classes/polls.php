@@ -366,6 +366,9 @@ class Poll
         $valid_dates_array = [];
         if (isset($_POST['pdates'])) {
             $valid_dates_array = $this->validateRawDates();
+            if ($valid_dates_array == false) {
+                $submit_error = true;
+            }
         }
 
         // Email parsing/validation
@@ -520,6 +523,7 @@ class Poll
 
     private function validateRawDates ()
     {
+
         // try parsing dates to see if they are all valid
         $subdates_dirty = $_POST['pdates'];
 
@@ -533,6 +537,7 @@ class Poll
         $valid_dates_array = [];
         $todaynow = new \DateTime(date('Y-m-d H:i:s'));
 
+        $submit_error = false;
         foreach ( $subdates_array as $datestr) {
             $datestr = trim($datestr);
             if (empty($datestr)) {
@@ -559,7 +564,17 @@ class Poll
                 continue;
             }
 
+            if (in_array($req_date, $valid_dates_array)) {
+                printAlert("Date " . $datestr . " is duplicated. Remove one instance.");
+                $submit_error = true;
+            }
+
             array_push($valid_dates_array, $req_date);
+        }
+
+        // do not return data, only false if there's a problem
+        if ($submit_error) {
+            return false;
         }
 
         return $valid_dates_array;
