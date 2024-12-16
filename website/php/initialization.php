@@ -99,7 +99,7 @@ switch ($req[0]) {
 
 # log errors according to PRODUCTION or DEVELOPMENT
 ini_set("log_errors", 1);
-ini_set("error_log", "../php-error.log");
+ini_set("error_log", "../_php-error.log");
 
 // use logging and present errors differently
 if (SERVER_IS_PRODUCTION) {
