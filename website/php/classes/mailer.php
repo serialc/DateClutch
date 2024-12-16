@@ -60,7 +60,7 @@ class Mail
             $this->mail->AltBody = $text;
 
             $this->mail->send();
-            $log->info('Sent email to ' . ($anon_logging ? 'someone' : $to_name) . ' with subject "$subject"');
+            $log->info('Sent email to ' . ($anon_logging ? 'someone' : $to_name) . ' with subject ' . $subject);
         } catch (Exception $e) {
             $log->error("Failed to send an email. Mailer error: {$this->mail->ErrorInfo}");
             return false;
