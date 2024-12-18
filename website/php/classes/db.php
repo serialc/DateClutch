@@ -264,7 +264,7 @@ class DataBaseConnection
 
     public function getUserPolls ($uid)
     {
-        $sql = "SELECT title, code, admin_code FROM " . TABLE_POLLS . " WHERE uid=?";
+        $sql = "SELECT title, code, admin_code, pid FROM " . TABLE_POLLS . " WHERE uid=?";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$uid]);
         $polls = [];
@@ -282,6 +282,29 @@ class DataBaseConnection
         $result = $stmt->execute([$clutcher, $pid, $date]);
         // check the query result and that at least one row was updated
         return ($result and $stmt->rowCount() === 1);
+    }
+
+    public function pollDelete ($uid, $pid)
+    {
+        // careful here - two tables
+        // delete summary table first, if that works then this uid
+        // is owner of poll and can delete dates
+        $sql = "DELETE FROM " . TABLE_POLLS . " WHERE uid=? AND pid=?";
+        $stmt = $this->conn->prepare($sql);
+        $result = $stmt->execute([$uid, $pid]);
+
+        // check the query result and that at least one row was deleted 
+        if ($result and $stmt->rowCount() === 1) {
+            // now try deleting the dates and clutchers
+            $sql = "DELETE FROM " . TABLE_POLLDATES . " WHERE pid=?";
+            $stmt = $this->conn->prepare($sql);
+            $result = $stmt->execute([$pid]);
+
+            // there may be no rows of data to delete, so nothing to check
+            // except that $result was true
+            return $result;
+        }
+        return false;
     }
 
     public function deletePollDateClutcher ($uid, $pid, $date)

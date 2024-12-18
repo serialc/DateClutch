@@ -32,6 +32,11 @@ class Poll
         unset($this->db);
     }
 
+    public static function delete ($uid, $pid )
+    {
+        return (new self())->db->pollDelete($uid, $pid);
+    }
+    
     public static function addDate ($uid, $pid, $date )
     {
         return (new self())->db->addPollDate($uid, $pid, $date);
@@ -59,6 +64,24 @@ class Poll
             return $instance;
         }
         return false;
+    }
+
+    public static function listForUser( $uid )
+    {
+        $instance = new self();
+        $polls = $instance->getUserList( $uid );
+
+        echo "<h2>Your polls</h2>";
+        echo '<div class="row"><div class="col">';
+        foreach ($polls as $poll) {
+            $poll_url = 'http://' . $_SERVER['SERVER_NAME'] . '/poll/' . $poll['code'];
+            $poll_edit_url = 'http://' . $_SERVER['SERVER_NAME'] . '/user/poll/' . $poll['code'];
+            $poll_admin_url = 'http://' . $_SERVER['SERVER_NAME'] . '/results/' . $poll['admin_code'];
+
+            echo '<p id="pid_' . $poll['pid'] . '"><a href="' . $poll_url . '">' . $poll['title'] . '</a> - <a href="' . $poll_admin_url . '">Results</a> ';
+            echo ' <a href="#/" title="Delete poll" data-bs-toggle="modal" data-bs-target="#mainModal"><i class="fa fa-trash" aria-hidden="true" action="delete_poll" pid="' . $poll['pid'] . '" poll_title="' . $poll['title'] . '"></i></a></p>';
+        }
+        echo '</div></div>';
     }
 
     public static function fromCode( $poll_code )

@@ -34,6 +34,15 @@ case 'delete_clutcher':
     }
     break;
 
+case 'delete_poll':
+    if (Poll::delete($user->getId(), $post['pid'])) {
+        echo buildResponse("success");
+    } else {
+        echo buildResponse("failed");
+    }
+    break;
+
+
 default:
     echo buildResponse("Unexpected API request in php/user/api.php");
 }

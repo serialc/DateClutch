@@ -34,8 +34,7 @@ if ($user->getStatus() >= MEMBER_STATUS_BASIC) {
         break;
 
     case 'polls':
-        // need to fold below code into php/class/polls.php
-        include '../php/user/polls.php';
+        $poll = Poll::listForUser($user->getId());
         break;
 
     default:
