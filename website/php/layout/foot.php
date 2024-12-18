@@ -41,6 +41,24 @@ echo $today->format('Y');
         </footer>
     </div>
 </div>
+<!-- Modal -->
+<div class="modal fade" id="mainModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="modalTitle">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modalBody">
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="modalClose" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" id="modalConfirm" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mainModal">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="/js/clutch.js"></script>
 </body>
 </html>

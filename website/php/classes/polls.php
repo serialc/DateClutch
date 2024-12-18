@@ -317,17 +317,14 @@ class Poll
         foreach($this->dates as $date => $clutcher) {
 
             $thisdate = new \DateTime($date);
+            $clean_date = $this->getCleanDate($thisdate);
 
-            echo '<div id="date_' . $date . '"class="col-lg-3 col-md-4 col-sm-6 mb-3"><div class="daterow rounded p-1 h-100">';
+            echo '<div id="date_' . $clean_date . '"class="col-lg-3 col-md-4 col-sm-6 mb-3"><div class="daterow rounded p-1 h-100">';
 
-            $jscode_date = "CLU.confirmDateAlter('delete_date', {'pid':" . $this->pid . ",'date':'" . $date . "'})";
-            echo '<a href="#/" onclick="' . $jscode_date . '" title="Delete date"><i class="fa fa-trash" aria-hidden="true"></i></a> ' . ($this->getCleanDate($thisdate)) . '<br>';
+            echo '<a href="#/" title="Delete date" data-bs-toggle="modal" data-bs-target="#mainModal"><i class="fa fa-trash" aria-hidden="true" action="delete_date" pid="' . $this->pid . '" date="' . $clean_date . '"></i></a> ' . $clean_date . '<br>';
 
             if(!empty($clutcher)) {
-
-                $jscode_clutcher = "CLU.confirmDateAlter('delete_clutcher', {'pid':" . $this->pid . ",'date':'" . $date . "'})";
-                echo ' <span id="clutcher_' . $date . '"><a href="#/" onclick="' . $jscode_clutcher . '" title="Erase clutcher"><i class="fa fa-eraser" aria-hidden="true"></i></a> ' . $clutcher . '</span>';
-
+                echo '<span id="clutcher_' . $clean_date . '"><a href="#/" title="Erase clutcher" data-bs-toggle="modal" data-bs-target="#mainModal"><i class="fa fa-eraser" aria-hidden="true" action="delete_clutcher" pid="' . $this->pid . '" date="' . $clean_date . '" clutcher="' . $clutcher . '"></i></a> ' . $clutcher . '</span>';
             }
             echo '</div></div>';
         }
