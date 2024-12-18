@@ -78,8 +78,8 @@ class Poll
             $poll_edit_url = 'http://' . $_SERVER['SERVER_NAME'] . '/user/poll/' . $poll['code'];
             $poll_admin_url = 'http://' . $_SERVER['SERVER_NAME'] . '/results/' . $poll['admin_code'];
 
-            echo '<p id="pid_' . $poll['pid'] . '"><a href="' . $poll_url . '">' . $poll['title'] . '</a> - <a href="' . $poll_admin_url . '">Results</a> ';
-            echo ' <a href="#/" title="Delete poll" data-bs-toggle="modal" data-bs-target="#mainModal"><i class="fa fa-trash" aria-hidden="true" action="delete_poll" pid="' . $poll['pid'] . '" poll_title="' . $poll['title'] . '"></i></a></p>';
+            echo '<p id="pid_' . $poll['pid'] . '"><a href="' . $poll_url . '">' . $poll['title'] . '</a> - <a href="' . $poll_admin_url . '">Results</a>';
+            echo ' <a href="#/" class="ms-2" title="Delete poll" data-bs-toggle="modal" data-bs-target="#mainModal"><i class="fa fa-trash accent3" aria-hidden="true" action="delete_poll" pid="' . $poll['pid'] . '" poll_title="' . $poll['title'] . '"></i></a></p>';
         }
         echo '</div></div>';
     }
@@ -344,10 +344,10 @@ class Poll
 
             echo '<div id="date_' . $clean_date . '"class="col-lg-3 col-md-4 col-sm-6 mb-3"><div class="daterow rounded p-1 h-100">';
 
-            echo '<a href="#/" title="Delete date" data-bs-toggle="modal" data-bs-target="#mainModal"><i class="fa fa-trash" aria-hidden="true" action="delete_date" pid="' . $this->pid . '" date="' . $clean_date . '"></i></a> ' . $clean_date . '<br>';
+            echo '<a href="#/" title="Delete date" data-bs-toggle="modal" data-bs-target="#mainModal"><i class="fa fa-trash accent3" aria-hidden="true" action="delete_date" pid="' . $this->pid . '" date="' . $clean_date . '"></i></a> ' . $clean_date . '<br>';
 
             if(!empty($clutcher)) {
-                echo '<span id="clutcher_' . $clean_date . '"><a href="#/" title="Erase clutcher" data-bs-toggle="modal" data-bs-target="#mainModal"><i class="fa fa-eraser" aria-hidden="true" action="delete_clutcher" pid="' . $this->pid . '" date="' . $clean_date . '" clutcher="' . $clutcher . '"></i></a> ' . $clutcher . '</span>';
+                echo '<span id="clutcher_' . $clean_date . '"><a href="#/" title="Erase clutcher" data-bs-toggle="modal" data-bs-target="#mainModal"><i class="fa fa-eraser accent3" aria-hidden="true" action="delete_clutcher" pid="' . $this->pid . '" date="' . $clean_date . '" clutcher="' . $clutcher . '"></i></a> ' . $clutcher . '</span>';
             }
             echo '</div></div>';
         }
