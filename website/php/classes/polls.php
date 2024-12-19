@@ -329,7 +329,7 @@ class Poll
         echo '<h3>' . $this->getTitle() . '</h3>';
         echo '<p>Go to the <a href="' . $this->getPublicUrl() . '">poll</a></p>';
         echo '<div class="input-group daterow rounded p-1">';
-        $jscode_newdate = "CLU.dateAlter('add_date', {'pid':" . $this->pid . ",'date':document.getElementById('new_date').value})";
+        $jscode_newdate = "CLU.modifyPoll('add_date', {'pid':" . $this->pid . ",'date':document.getElementById('new_date').value})";
         echo '<label for="new_date" class="input-group-text">Add new date</label>' .
             '<input type="datetime-local" class="form-control" id="new_date" name="new_date">' .
             '<button class="btn" type="button" onclick="' . $jscode_newdate . '">Add</button>';
