@@ -1,6 +1,6 @@
 <?php
 // Filename: index.php
-// Purpose: Main landing file of PORG
+// Purpose: Main landing file
 
 namespace frakturmedia\clutch;
 

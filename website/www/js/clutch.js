@@ -18,7 +18,7 @@ var CLU = {
 
         // on modal appearance determine what the affirmative button will do
         modalEl.addEventListener('show.bs.modal', event => {
-            const data_el = event.explicitOriginalTarget;
+            const data_el = event.relatedTarget;
             const action = data_el.getAttribute('action');
             let pid, date, clutcher, ptitle;
 

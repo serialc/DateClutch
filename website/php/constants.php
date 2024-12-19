@@ -2,7 +2,7 @@
 // Filename: constants.php
 // Purpose: define values that are more general and not sensitive
 
-namespace frakturmedia\blither;
+namespace frakturmedia\clutch;
 
 // logging
 define("LOGSDIR", "../logs/");
