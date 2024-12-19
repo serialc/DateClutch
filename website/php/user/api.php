@@ -11,7 +11,7 @@ $post = json_decode(file_get_contents('php://input'), true);
 
 switch ($req[1]) {
 case 'add_date':
-    if (Poll::addDate($user->getId(), $post['pid'], $post['date'])) {
+    if (Poll::addDate($user->getId(), $post['pid'], $post['date'], $post['time'])) {
         echo buildResponse("success");
     } else {
         echo buildResponse("failed");

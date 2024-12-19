@@ -37,8 +37,15 @@ class Poll
         return (new self())->db->pollDelete($uid, $pid);
     }
     
-    public static function addDate ($uid, $pid, $date )
+    public static function addDate ($uid, $pid, $date, $time )
     {
+        if (empty($date)) { 
+            return false;
+        }
+        # concatenate date and time if there's a time provided
+        if (!empty($time)) {
+            $date = $date . ' ' . $time;
+        }
         return (new self())->db->addPollDate($uid, $pid, $date);
     }
 
@@ -326,16 +333,22 @@ class Poll
 
         // show the new date creator option
         echo '<div class="row mb-2"><div class="col-12 mb-2">';
-        echo '<h3>' . $this->getTitle() . '</h3>';
-        echo '<p>Go to the <a href="' . $this->getPublicUrl() . '">poll</a></p>';
+        echo '<h2>Modify dates and clutchers</h2>';
+        echo '<p>Go to the <a href="' . $this->getPublicUrl() . '">"' . $this->getTitle() . '" poll</a></p>';
+        echo '<h3>Add a new date</h3>';
         echo '<div class="input-group daterow rounded p-1">';
-        $jscode_newdate = "CLU.modifyPoll('add_date', {'pid':" . $this->pid . ",'date':document.getElementById('new_date').value})";
-        echo '<label for="new_date" class="input-group-text">Add new date</label>' .
-            '<input type="datetime-local" class="form-control" id="new_date" name="new_date">' .
+        $jscode_newdate = "CLU.modifyPoll('add_date', {'pid':" . $this->pid . ",'date':document.getElementById('new_date').value, 'time':document.getElementById('new_time').value})";
+        echo '<label for="new_date" class="input-group-text">Date</label>' .
+            '<input type="date" class="form-control" id="new_date" name="new_date">' .
+            '<label for="new_time" class="input-group-text">Time</label>' .
+            '<input type="time" class="form-control" id="new_time" name="new_time">' .
             '<button class="btn" type="button" onclick="' . $jscode_newdate . '">Add</button>';
-        echo '</div></div></div>';
+        echo '</div>';
+        echo '<small class="form-text text-muted">Specify a date. Time is optional and can be left blank.</small>';
+        echo '</div></div>';
 
         // Show response dates and clutchers
+        echo '<h3>Delete dates or erase clutchers</h3>';
         echo '<div class="row mb-2">';
         foreach($this->dates as $date => $clutcher) {
 
