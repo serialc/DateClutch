@@ -82,10 +82,10 @@ switch ($req[0]) {
             }
         }
 
-        // if logged in - redirect to the browse page of OERs
+        // if logged in - redirect to the user's polls
         if ($user->getStatus() >= MEMBER_STATUS_BASIC) {
-            // logged in successfully - redirect to OERs
-            header('Location: /account');
+            // logged in successfully - show their polls
+            header('Location: /user/polls');
         }
         break;
 
