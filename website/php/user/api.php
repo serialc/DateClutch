@@ -35,9 +35,13 @@ case 'delete_clutcher':
     break;
 
 case 'delete_poll':
+    global $log;
+
     if (Poll::delete($user->getId(), $post['pid'])) {
+        $log->info("User id " . $user->getId() . " deleted poll with id " . $post['pid']);
         echo buildResponse("success");
     } else {
+        $log->info("User id " . $user->getId() . " failed deleting poll with id " . $post['pid']);
         echo buildResponse("failed");
     }
     break;

@@ -54,7 +54,38 @@ if (strcmp($req[0], "logout") === 0) {
 }
 
 // -------------------------
-// process logging in and user loading
+// Logging
+// -------------------------
+
+// Monolog - create log channels
+$log = new Logger('main');
+$log->pushHandler(new StreamHandler(LOGSDIR . 'main.log', Level::Info));
+// Use: $log->info("something"), $log->warning(), or $log->error()
+
+# log errors according to PRODUCTION or DEVELOPMENT
+ini_set("log_errors", 1);
+ini_set("error_log", "../_php-error.log");
+
+// use logging and present errors differently
+if (SERVER_IS_PRODUCTION) {
+    # load appropriate php configs
+    ini_set('display_startup_errors', 0);
+    ini_set('display_errors', 0);
+    error_reporting(E_ALL & ~E_NOTICE);
+} else {
+    # Error diagnostic
+    $whoops = new \Whoops\Run;
+    $whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
+    $whoops->register();
+
+    # load appropriate php configs
+    ini_set('display_startup_errors', 1);
+    ini_set('display_errors', 1);
+    error_reporting(E_ALL);
+}
+
+// -------------------------
+// process logging-in and user loading
 // -------------------------
 $user = new User();
 
@@ -95,33 +126,5 @@ switch ($req[0]) {
 
     default:
 }
-
-
-# log errors according to PRODUCTION or DEVELOPMENT
-ini_set("log_errors", 1);
-ini_set("error_log", "../_php-error.log");
-
-// use logging and present errors differently
-if (SERVER_IS_PRODUCTION) {
-    # load appropriate php configs
-    ini_set('display_startup_errors', 0);
-    ini_set('display_errors', 0);
-    error_reporting(E_ALL & ~E_NOTICE);
-} else {
-    # Error diagnostic
-    $whoops = new \Whoops\Run;
-    $whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
-    $whoops->register();
-
-    # load appropriate php configs
-    ini_set('display_startup_errors', 1);
-    ini_set('display_errors', 1);
-    error_reporting(E_ALL);
-}
-
-// Monolog - create log channels
-$log = new Logger('main');
-$log->pushHandler(new StreamHandler(LOGSDIR . 'main.log', Level::Info));
-// Use: $log->info("something"), $log->warning(), or $log->error()
 
 // EOF
