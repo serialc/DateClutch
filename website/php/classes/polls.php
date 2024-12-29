@@ -250,13 +250,13 @@ class Poll
             $this_year = $date->format('Y');
             if ( strcmp($year, $this_year) !== 0 ) {
                 $year = $this_year;
-                echo '<h1 class="mb-0"><small>' . $year . '</small></h1>';
+                echo '<h4 class="mb-0 accent1 fs-3"><small>' . $year . '</small></h1>';
             }
 
             $this_month = $date->format('F');
             if ( strcmp($month, $this_month) !== 0 ) {
                 $month = $this_month;
-                echo '<h2 class="mt-2"><small>' . $month . '</small></h2>';
+                echo '<h5 class="mt-2 accent2 fs-4"><small>' . $month . '</small></h5>';
             }
 
             $date_str = $date->format('Y-m-d H:i:s');

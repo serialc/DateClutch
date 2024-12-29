@@ -29,7 +29,11 @@ if ($user->getStatus() >= MEMBER_STATUS_BASIC) {
     case 'poll_results':
         if (isset($req[2])) {
             $poll = Poll::fromCode($req[2]);
-            $poll->displayResponsesEditing();
+            if ($poll === false) {
+              echo '<div class="row"><div class="col"><h2>Error</h2><p>Poll not found.</p></div></div>';
+            } else {
+              $poll->displayResponsesEditing();
+            }
         }
         break;
 
