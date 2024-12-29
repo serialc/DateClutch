@@ -1,9 +1,8 @@
 <?php
-
 // Filename: config_template.php
 // Purpose: variables that need to be configured
 
-namespace frakturmedia\blither;
+namespace frakturmedia\clutch;
 
 // =============== EDIT and save as php/config.php =================
 // DefineDB connection parameters

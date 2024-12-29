@@ -20,7 +20,7 @@ define("MEMBER_STATUS_BASIC", 1);
 define("MEMBER_STATUS_CREATOR", 16);
 define("MEMBER_STATUS_ADMIN", 255);
 
-// user facing variabls
+// user facing variables
 define("ANONYMOUS_NAME", '-private-');
 
 // other
