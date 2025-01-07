@@ -24,6 +24,9 @@ function buildResponse($data, $status = 200): string
 function checkEmailValidity($email)
 {
     $regex = '/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/'; 
+
+    // validation only accepts lower case
+    $email = strtolower($email);
     return preg_match($regex, $email);
 }
 
