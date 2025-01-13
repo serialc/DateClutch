@@ -262,6 +262,20 @@ class DataBaseConnection
         return $polldates;
     }
 
+    public function getAllUserPolls ()
+    {
+        $sql = "SELECT u.username, p.pcount FROM " . TABLE_USERS . " AS u " .
+            "JOIN (SELECT uid, COUNT(*) AS pcount FROM " . TABLE_POLLS . " GROUP BY uid) AS p " .
+            "ON u.uid=p.uid";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([]);
+        $upolls = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            array_push($upolls, $row);
+        }
+        return $upolls;
+    }
+
     public function getUserPolls ($uid)
     {
         $sql = "SELECT title, code, admin_code, pid FROM " . TABLE_POLLS . " WHERE uid=?";

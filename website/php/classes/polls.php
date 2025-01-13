@@ -59,7 +59,7 @@ class Poll
         return (new self())->db->deletePollDate($uid, $pid, $date);
     }
 
-    public static function getUserList( $uid )
+    private static function getUserList( $uid )
     {
         return (new self())->db->getUserPolls($uid);
     }
@@ -73,10 +73,42 @@ class Poll
         return false;
     }
 
+    public static function listPollOverview()
+    {
+        global $user;
+
+        // only show info for admin
+        if ($user->getStatus() == MEMBER_STATUS_ADMIN) {
+            $instance = new self();
+            $ov = $instance->db->getAllUserPolls();
+
+            echo "<h2>User polls</h2>";
+            echo '<table><tr><th class="pe-5">User</th><th>Poll count</th></tr>';
+            foreach ( $ov as $u ) {
+                print('<tr><td class="pe-5">' . $u['username'] . "</td><td>" . $u["pcount"] . "</td></tr>");
+            }
+            echo "</table>";
+        }
+    }
+
     public static function listForUser( $uid )
     {
+        global $user;
+
+        // only show link for admin
+        if ($user->getStatus() == MEMBER_STATUS_ADMIN) {
+            echo  <<< _END
+                <div class="col-12 text-end">
+                    <a href="/user/overview" title="Logout">
+                        <i class="fa fa-eye" aria-hidden="true"></i> Overview
+                    </a>
+                </div>
+            _END;
+        }
+
         $instance = new self();
-        $polls = $instance->getUserList( $uid );
+        $polls = $instance->db->getUserPolls($uid);
+        //$polls = $instance->getUserList( $uid );
 
         echo "<h2>Your polls</h2>";
         echo '<div class="row"><div class="col">';

@@ -15,12 +15,12 @@ if (isset($_POST['email'])) {
     $submit_error = false;
 
     if (empty($uname)) {
-        printAlert("Name cannot be blank.");
+        printAlert("Name cannot be blank");
         $submit_error = true;
     }
 
     if (empty($email) or !checkEmailValidity($email)) {
-        printAlert("Email not valid.");
+        printAlert("Email not valid");
         $submit_error = true;
     }
 
@@ -30,7 +30,7 @@ if (isset($_POST['email'])) {
         $user->setEmail($email);
         $user->save();
 
-        printSuccess("Username and email updated.");
+        printSuccess("Username and email updated");
     }
 }
 
@@ -43,12 +43,12 @@ if (isset($_POST['invite_email'])) {
     $submit_error = false;
 
     if (empty($iname)) {
-        printAlert("Invitation name cannot be blank.");
+        printAlert("Invitation name cannot be blank");
         $submit_error = true;
     }
 
     if (empty($iemail) or !checkEmailValidity($iemail)) {
-        printAlert("Invitation email address not valid.");
+        printAlert("Invitation email address not valid");
         $submit_error = true;
     }
 
@@ -58,9 +58,9 @@ if (isset($_POST['invite_email'])) {
 
         $invite = new Mail();
         if ($invite->sendInvitation($iname, $iemail, $code)) {
-            printSuccess("Invitation sent.");
+            printSuccess("Invitation sent");
         } else {
-            printAlert("Failed to send the invitation.");
+            printAlert("Failed to send the invitation");
         }
     }
 }

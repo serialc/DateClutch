@@ -41,6 +41,10 @@ if ($user->getStatus() >= MEMBER_STATUS_BASIC) {
         $poll = Poll::listForUser($user->getId());
         break;
 
+    case 'overview':
+        $poll = Poll::listPollOverview();
+        break;
+
     default:
         echo '<div class="row"><div class="col"><h2>Error</h2><p>Unknown user menu option selected.</p></div></div>';
     }
