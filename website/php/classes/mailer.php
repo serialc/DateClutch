@@ -73,13 +73,13 @@ class Mail
     {
         global $log;
 
-        $html = '<html><body style="font-size: 1.3em; background-color: #212529; padding: 10%; color: #dee2e6;"><center>' .
+        $html = '<html><body><div style="font-size: 1.3em; background-color: #212529; padding: 10%; color: #dee2e6;"><center>' .
             '<p style="color: #dee2e6;">Dear <strong style="color: #A836FF">' . $name .
             '</strong></span>,<p>' . "\n" .
             '<p><stron>' . $clutcher_name . '</strong> just clutched the strong date of <strong style="color: #36FFA8">' . $date . '</strong> for the ' .
             '<span style="color: #FFA836;"><strong>DateClutch</strong></span> poll titled <strong>"' . $title . '"</strong>.</p>' . "\n" .
             '<p style="color: #dee2e6;">Keep up the good work.</p>' . "\n" .
-            '</center></body></html>';
+            '</center></div></body></html>';
 
         $text = strip_tags($html);
 
@@ -92,14 +92,14 @@ class Mail
     {
         global $log;
 
-        $html = '<html><body style="font-size: 1.3em; background-color: #212529; padding: 10%; color: #dee2e6;"><center>' .
+        $html = '<html><body><div style="font-size: 1.3em; background-color: #212529; padding: 10%; color: #dee2e6;"><center>' .
             '<p style="color: #dee2e6;">Thank you <strong style="color: #A836FF">' . $name .
             '</strong></span> for clutching the strong date of <strong style="color: #36FFA8">' . $date . '</strong>.' . "\n" . '<p>Good choice!</p>' . "\n" .
             '<p style="color: #dee2e6;">Your date choice for the ' .
             '<span style="color: #FFA836;"><strong>DateClutch</strong></span> poll titled <strong>"' . $title . '"</strong> has been shared with the creators.</p>' . "\n" .
             '<p style="color: #dee2e6;">We hope that was easy.</p>' . "\n" .
             '<p style="color: #dee2e6;">If you have questions or concerns please contact the creator of the poll, ' . $reply_to_name . ', at the email address ' . $reply_to_email . '.</p>' . "\n" .
-            '</center></body></html>';
+            '</center></div></body></html>';
 
         $text = strip_tags($html);
 
@@ -113,7 +113,7 @@ class Mail
     {
         global $log;
 
-        $html = '<html><body style="font-size: 1.3em; background-color: #212529; padding: 10%; color: #dee2e6;"><center>' .
+        $html = '<html><body><div style="font-size: 1.3em; background-color: #212529; padding: 10%; color: #dee2e6;"><center>' .
             '<p style="color: #dee2e6;">Well hello<strong style="color: #A836FF"> ' . $name .
             '</strong></span>,</p>' . "\n" .
             '<p style="color: #dee2e6;">You, or someone being naughty, has stated that you have forgotten your <span style="color: #FFA836;"><strong>DateClutch</strong></span> password.</p>' . "\n" .
@@ -121,7 +121,7 @@ class Mail
             '<p style="color: #dee2e6;">However, if you <emphasis>have</emphasis> forgotten your password, then you should really consider using a password manager (<a href="https://www.mozilla.org/en-US/firefox/features/password-manager/" style="color: #36ffa8">Firefox/Mozilla</a>, a non-profit, provides one freely!).</p>' . "\n" .
             '<p style="color: #dee2e6;">Anyway, <a href="' . $reset_url . '" style="color: #36ffa8">here is your link</a> to reset your password - if you need it.</p>' . "\n" .
             '<p style="color: #dee2e6;"><a href="' . $reset_url . '" style="color: #36ffa8">' . $reset_url . '</a></p>' . "\n" .
-            '</center></body></html>';
+            '</center></div></body></html>';
         $text = strip_tags($html);
 
         if( !$this->send($email, $name, "Password reset request", $html, $text, false) ) {
@@ -135,7 +135,7 @@ class Mail
 
         $reg_url = 'http://' . $_SERVER['SERVER_NAME'] . '/register/' . $code;
 
-        $html = '<html><body style="font-size: 1.3em; background-color: #212529; padding: 10%; color: #dee2e6;"><center>' .
+        $html = '<html><body>div style="font-size: 1.3em; background-color: #212529; padding: 10%; color: #dee2e6;"><center>' .
             '<p style="color: #dee2e6;">Dear <strong style="color: #A836FF">' . $name .
             '</strong></span>,<p>' . "\n" .
             '<p><stron>' . $user->getName() . '</strong> ' .
@@ -144,7 +144,7 @@ class Mail
             '<p style="color: #dee2e6;"><a href="' . $reg_url . '" style="color: #36ffa8">' . $reg_url . '</a></p>' . "\n" .
             '<p style="color: #dee2e6;">Keep up the good work.</p>' . "\n" .
             '<p style="color: #dee2e6;">P.S. Your registration invitation self-destructs in 10 days.</p>' . "\n" .
-            '</center></body></html>';
+            '</center></div></body></html>';
 
         $text = strip_tags($html);
 

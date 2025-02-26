@@ -242,7 +242,7 @@ class User
     public function getIdFromEmail($email)
     {
         $email_lwr = strtolower($email);
-        return $this->db->getUseridFromEmail($email_lwr);
+        return $this->db->getUserIdFromEmail($email_lwr);
     }
 
     public function resetPassword($code, $pw)
