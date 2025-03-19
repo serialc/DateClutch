@@ -74,7 +74,7 @@ class Mail
         global $log;
 
         $name = htmlentities($name, ENT_COMPAT, 'UTF-8');
-        $title = utf8_decode($title);
+        $title = iconv('UTF-8', 'ISO-8859-1', $title);
         $clutcher_name = htmlentities($clutcher_name, ENT_COMPAT, 'UTF-8');
 
         $html = '<html><head><meta http-equiv="Content-type" content="text/html; charset=utf-8" /></head>' .
@@ -98,7 +98,7 @@ class Mail
         global $log;
 
         $name = htmlentities($name, ENT_COMPAT, 'UTF-8');
-        $title = utf8_decode($title);
+        $title = iconv('UTF-8', 'ISO-8859-1', $title);
         $reply_to_name = htmlentities($reply_to_name, ENT_COMPAT, 'UTF-8');
 
         $html = '<html><head><meta http-equiv="Content-type" content="text/html; charset=utf-8" /></head>' .
@@ -147,7 +147,7 @@ class Mail
         global $user;
 
         $name = htmlentities($name, ENT_COMPAT, 'UTF-8');
-        $title = utf8_decode($user->getName()) . ' sent you a DateClutch invitation';
+        $title = iconv('UTF-8', 'ISO-8859-1', $user->getName()) . ' sent you a DateClutch invitation';
 
         $reg_url = 'http://' . $_SERVER['SERVER_NAME'] . '/register/' . $code;
 
