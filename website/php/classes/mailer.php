@@ -74,6 +74,7 @@ class Mail
         global $log;
 
         $name = htmlentities($name, ENT_COMPAT, 'UTF-8');
+        $subject = html_entity_decode($title, ENT_QUOTES, 'UTF-8');
         $title = iconv('UTF-8', 'ISO-8859-1', $title);
         $clutcher_name = htmlentities($clutcher_name, ENT_COMPAT, 'UTF-8');
 
@@ -88,7 +89,7 @@ class Mail
 
         $text = strip_tags($html);
 
-        if( !$this->send($email, $name, $title, $html, $text, false) ) {
+        if( !$this->send($email, $name, $subject, $html, $text, false) ) {
                 $log->error("Failed to send email notification to " . $email . ' for ' . $title . '.');
         }
     }
@@ -98,6 +99,7 @@ class Mail
         global $log;
 
         $name = htmlentities($name, ENT_COMPAT, 'UTF-8');
+        $subject = html_entity_decode($title, ENT_QUOTES, 'UTF-8');
         $title = iconv('UTF-8', 'ISO-8859-1', $title);
         $reply_to_name = htmlentities($reply_to_name, ENT_COMPAT, 'UTF-8');
 
@@ -113,7 +115,7 @@ class Mail
 
         $text = strip_tags($html);
 
-        if( !$this->send($email, $name, $title, $html, $text, $privacy_mode) ) {
+        if( !$this->send($email, $name, $subject, $html, $text, $privacy_mode) ) {
             $log->error("Failed to send email notification to " .
                 ($privacy_mode ? '-redacted due to poll privacy mode-' : $email) . ' for ' . $title . '.');
         }
