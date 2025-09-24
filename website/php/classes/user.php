@@ -34,6 +34,11 @@ class User
         return (new self())->db->getUsernameFromEmail($email);
     }
 
+    public static function checkEmailExists ($email)
+    {
+        return (new self())->db->checkExistenceOfEmail($email);
+    }
+
     public static function createInvitation ()
     {
         $inv_code = getRandomCode(64);

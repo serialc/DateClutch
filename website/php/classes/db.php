@@ -176,7 +176,7 @@ class DataBaseConnection
 
         $stmt = $this->conn->prepare($sql);
         $result = $stmt->execute([$title, $description, intval($priv_mode), $uid, $pid]);
-        // check the query result and that at least one row was updated
+        // check the query result and that exactly one row was updated
         return ($result and $stmt->rowCount() === 1);
     }
 
@@ -425,6 +425,37 @@ class DataBaseConnection
             "code=? AND expires > NOW()";
         $stmt = $this->conn->prepare($sql);
         $result = $stmt->execute([$code]);
+        return ($result and $stmt->rowCount() === 1);
+    }
+
+    public function transferPollOwnership ($pid, $email) {
+        // get the new owner's uid
+        $new_owner_uid = $this->getUserIdFromEmail($email);
+        
+        if ($new_owner_uid) {
+            // now update the poll ownership
+            $sql = "UPDATE " . TABLE_POLLS .
+                " SET uid=? WHERE pid=?";
+
+            $stmt = $this->conn->prepare($sql);
+            $result = $stmt->execute([$new_owner_uid, $pid]);
+
+            // check the query result and that exactly one row was updated
+            return ($result and $stmt->rowCount() === 1);
+        }
+        printAlert("Email not valid");
+        return false;
+    }
+
+    public function updatePollCodes ($pid, $code, $admin_code)
+    {
+        $sql = "UPDATE " . TABLE_POLLS .
+            " SET code=?, admin_code=? WHERE pid=?";
+
+        $stmt = $this->conn->prepare($sql);
+        $result = $stmt->execute([$code, $admin_code, $pid]);
+
+        // check the query result and that exactly one row was updated
         return ($result and $stmt->rowCount() === 1);
     }
 }

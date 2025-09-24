@@ -3,8 +3,9 @@
 /* Colour scheme
   is triadic with the
   teal: #36FFA8
-  ocre: #FFA836
   violet: #A836FF
+  ocre: #FFA836
+  burnt ocre: #FFA83633
 */
 
 /* define custom properties */
@@ -12,6 +13,7 @@
     --primary-colour: #36FFA8;
     --secondary-colour: #A836FF;
     --highlight-colour: #FFA836;
+    --dark-highlight-colour: #FFA83633;
 }
 
 body {
@@ -69,6 +71,11 @@ button.btn-flashes:first-child:active {
     background-color: var(--primary-colour);
     border-color: var(--primary-colour);
     transition: all 0.2s ease-out;
+}
+
+button.btn:disabled {
+    background-color: var(--dark-highlight-colour);
+    border-color: var(--highlight-colour);
 }
 
 a {

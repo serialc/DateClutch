@@ -46,6 +46,23 @@ case 'delete_poll':
     }
     break;
 
+case 'email_validation':
+    global $log;
+
+    // to prevent spamming for email addresses, take some time to reflect on life
+    sleep(2);
+
+    $email = $post['email'];
+
+    if (User::checkEmailExists($email)) {
+        $log->info("User id " . $user->getId() . " confirmed existence of email starting with " . substr($email, 0, 6));
+        echo buildResponse("success");
+    } else {
+        $log->info("User id " . $user->getId() . " did not find existence of email starting with " . substr($email, 0, 6));
+        echo buildResponse("failed");
+    }
+
+    break;
 
 default:
     echo buildResponse("Unexpected API request in php/user/api.php");

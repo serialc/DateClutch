@@ -132,6 +132,10 @@ class Poll
         return false;
     }
 
+    public function getUid ()
+    {
+        return $this->uid;
+    }
     public function retrieveByPid ($poll_id)
     {
         $poll = $this->db->retrievePollFromPid($poll_code);
@@ -148,6 +152,7 @@ class Poll
             $poll = $this->db->retrievePollFromAdminCode($poll_code);
             break;
         }
+
 
         // if the poll details were retrieved, then also get the dates
         if ($poll !== false) {
@@ -202,6 +207,27 @@ class Poll
         }
     }
         
+    public function displayOwnerControls ($user)
+    {
+        // check if this poll is being viewed by it's owner/creator
+        if ( $user->getId() === $this->uid ) {
+
+            $poll_url = 'http://' . $_SERVER['SERVER_NAME'] . '/poll/' . $this->code;
+            $poll_config_url = 'http://' . $_SERVER['SERVER_NAME'] . '/user/poll_config/' . $this->code;
+            $poll_edit_url = 'http://' . $_SERVER['SERVER_NAME'] . '/user/poll/' . $this->code;
+            $poll_dates_edit_url = 'http://' . $_SERVER['SERVER_NAME'] . '/user/poll_results/' . $this->code;
+            $poll_admin_url = 'http://' . $_SERVER['SERVER_NAME'] . '/results/' . $this->admin_code;
+
+            echo '<p class="text-end accent3">' .
+                '<a href="' . $poll_url . '" title="Live poll"><i class="fa fa-check-square accent3" aria-hidden="true"></i></a> ' .
+                '<a href="' . $poll_config_url . '" title="Configuration"><i class="fa fa-shield accent3" aria-hidden="true"></i></a> ' .
+                '<a href="' . $poll_edit_url . '" title="Edit poll details"><i class="fa fa-pencil" aria-hidden="true"></i></a>' .
+                ' <a href="' . $poll_dates_edit_url . '" title="Edit dates and results"><i class="fa fa-users" aria-hidden="true"></i></a>' .
+                ' <a href="' . $poll_admin_url . '" title="See results"><i class="fa fa-th-large" aria-hidden="true"></i></a>' .
+                '</p>';
+        }
+    }
+
     public function display ()
     {
         global $user;
@@ -209,16 +235,8 @@ class Poll
         echo '<form action="" method="post">';
         echo '<div class="row"><div class="col">';
 
-        // check if this poll is being viewed by it's owner/creator
-        if ( $user->getId() === $this->uid ) {
-            $poll_edit_url = 'http://' . $_SERVER['SERVER_NAME'] . '/user/poll/' . $this->code;
-            $poll_dates_edit_url = 'http://' . $_SERVER['SERVER_NAME'] . '/user/poll_results/' . $this->code;
+        $this->displayOwnerControls($user);
 
-            echo '<p class="text-end accent3">' .
-                '<a href="' . $poll_edit_url . '" title="Edit poll details"><i class="fa fa-pencil" aria-hidden="true"></i></a>' .
-                ' <a href="' . $poll_dates_edit_url . '" title="Edit dates and results"><i class="fa fa-users" aria-hidden="true"></i></a>' .
-                '</p>';
-        }
         echo '<h2>' . $this->title . '</h2>';
 
         $Parsedown = new \Parsedown();
@@ -230,7 +248,6 @@ class Poll
             '<span for="pname" class="input-group-text">Name</span>' .
             '<input type="text" class="form-control" autofocus="autofocus" id="pname" name="pname" maxlength="128" value="' . (isset($_POST['pname']) ? $_POST['pname'] : '') . '">' .
             '</div>';
-
 
         // show available dates
         echo '<h3 class="mt-5">Select a date</h3>';
@@ -270,7 +287,7 @@ class Poll
 
         if (count($dates) === 0) {
             echo '<div class="col">';
-            printAlert("Unfortunately no dates are available. If this is unexpect, contact the person who sent you the poll.");
+            printAlert("Unfortunately no dates are available. If this is unexpected, contact the person who sent you the poll.");
             echo '</div>';
         }
 
@@ -365,6 +382,7 @@ class Poll
 
         // show the new date creator option
         echo '<div class="row mb-2"><div class="col-12 mb-2">';
+        $this->displayOwnerControls($user);
         echo '<h2>Modify dates and clutchers</h2>';
         echo '<p>Go to the <a href="' . $this->getPublicUrl() . '">"' . $this->getTitle() . '" poll</a></p>';
         echo '<h3>Add a new date</h3>';
@@ -466,8 +484,7 @@ class Poll
 
             // generate random code for poll URL if need
             if (empty($this->code)) {
-                $this->code = getRandomCode(64);
-                $this->admin_code = getRandomCode(64);
+                $this->generatePollCodes();
             }
 
             // If this is a new poll
@@ -497,6 +514,8 @@ class Poll
     {
         // form and title input
         if ($edit_mode) {
+            global $user;
+            $this->displayOwnerControls($user);
             echo '<h2>Edit poll</h2>';
         } else {
             echo '<h2>New poll</h2>';
@@ -649,7 +668,9 @@ class Poll
     {
         $poll_url = 'http://' . $_SERVER['SERVER_NAME'] . '/poll/' . $this->code;
         $poll_edit_url = 'http://' . $_SERVER['SERVER_NAME'] . '/user/poll/' . $this->code;
+        $poll_config_url = 'http://' . $_SERVER['SERVER_NAME'] . '/user/poll_config/' . $this->code;
         $poll_results_url = 'http://' . $_SERVER['SERVER_NAME'] . '/results/' . $this->admin_code;
+        $poll_dates_edit_url = 'http://' . $_SERVER['SERVER_NAME'] . '/user/poll_results/' . $this->code;
 
         // show the results of form processing
         echo '<h3>' . $this->title . '</h2>';
@@ -657,7 +678,9 @@ class Poll
         echo '<div>Visit the <a href="' . $poll_url . '">poll</a></div>';
         echo '<div>Share the poll <button data="' . $poll_url . '" class="btn btn-sm btn-flashes" onclick="CLU.copyUrl(event)">Copy URL</button></div>';
         echo '<div>Edit the <a href="' . $poll_edit_url . '">poll</a></div>';
-        echo '<div>See the <a href="' . $poll_results_url . '">results</a></div>';
+        echo '<div>Reconfigure the <a href="' . $poll_config_url . '">poll</a></div>';
+        echo '<div>Share the poll results <button data="' . $poll_dates_edit_url . '" class="btn btn-sm btn-flashes" onclick="CLU.copyUrl(event)">Copy URL</button></div>';
+        echo '<div>Edit the <a href="' . $poll_results_url . '">results</a></div>';
         echo "</div></div>";
     }
 
@@ -734,5 +757,83 @@ class Poll
 
         echo '<p>' . $clutchers_count . ' people have clutched a date</p>';
         echo ($clutchers_count === 0) ? '<p class="accent1">Don\'t let that make you sad</p>' : "";
+    }
+
+    public function generatePollCodes ()
+    {
+        $this->code = getRandomCode(64);
+        $this->admin_code = getRandomCode(64);
+    }
+
+    public function displayConfiguration ()
+    {
+        global $user;
+
+        // user wants to change the poll URLs/codes
+        if(isset($_POST['regenerate_poll_codes'])) {
+
+            // updates
+            $this->generatePollCodes();
+
+            // update poll codes
+            if ($this->db->updatePollCodes($this->pid, $this->code, $this->admin_code)) {
+                printSuccess("Poll codes updated");
+                $this->displayOwnerControls($user);
+                return;
+            } else {
+                printSuccess("Poll codes failed to update");
+            }
+        }
+
+        // user requested transfer of poll to another user using email
+        if(isset($_POST['email'])) {
+            $email = $_POST['email'];
+
+            // check email validity
+
+            // update the data
+            if( $this->db->transferPollOwnership($this->pid, $email) ) {
+                printSuccess("Poll transferred to new owner (" . $email . ")");
+                // reload the poll and ownership data!
+                $poll = $this->db->retrievePollFromCode($this->code);
+                $this->fillDetails($poll);
+                return;
+            } else {
+                printAlert("Failed to transfer poll to new owner (" . $email . ")");
+            }
+        }
+
+        $this->displayOwnerControls($user);
+
+
+        // show forms
+        echo '<h2>Poll reconfiguration</h2>';
+        echo '<h3>' . $this->title .'</h3>';
+
+        echo '<h4 class="accent1">Transfer ownership</h4>';
+        echo '<p>Transfer poll ownership and management to another user.</p>';
+        echo '<form action="" method="post">';
+        echo '<div class="input-group mb-3">
+            <span class="input-group-text">Email</span>
+            <input type="email" name="email" class="form-control" oninput="CLU.searchValidEmail(this)" aria-label="Email address" required>
+            <button id="emailTransferSubmit" class="btn" type="submit" disabled>Submit</button>
+            </div>';
+        echo '</form>';
+
+        echo '<h4 class="accent1">Create new poll URLs</h4>';
+        echo '<p>If your poll is shared outside of your control or being spammed, you can create a new URL/link for your poll, destroying the old one. This will create a new secret link/URL for the public and results pages.</p>';
+
+        echo '<form action="" method="post">';
+        echo '<button name="regenerate_poll_codes" class="btn" type="submit">Regenerate poll URLs</button>';
+        echo '</form>';
+
+        $poll_url = 'http://' . $_SERVER['SERVER_NAME'] . '/poll/' . $this->code;
+        $poll_results_url = 'http://' . $_SERVER['SERVER_NAME'] . '/results/' . $this->admin_code;
+
+        echo '<p><small>';
+        echo '<div>Poll code:<br><small><a href="' . $poll_url . '">' . $this->code . '<a></small></div>';
+        echo '<div>Poll results code:<br><small><a href="' . $poll_results_url . '">' . $this->admin_code . '</a></small></div>';
+        echo '</small><p>';
+
     }
 }

@@ -22,17 +22,30 @@ if ($user->getStatus() >= MEMBER_STATUS_BASIC) {
     case 'poll':
         if (isset($req[2])) {
             $poll = Poll::fromCode($req[2]);
-            $poll->displayEditing();
+            if ($poll) {
+                $poll->displayEditing();
+            }
+        }
+        break;
+
+    case 'poll_config':
+        if (isset($req[2])) {
+            $poll = Poll::fromCode($req[2]);
+            if ($poll and $poll->getUid() === $user->getId()) {
+                $poll->displayConfiguration();
+            } else {
+                printAlert("You do not have access to this poll.");        
+            }
         }
         break;
 
     case 'poll_results':
         if (isset($req[2])) {
             $poll = Poll::fromCode($req[2]);
-            if ($poll === false) {
-              echo '<div class="row"><div class="col"><h2>Error</h2><p>Poll not found.</p></div></div>';
+            if ($poll and $poll->getUid() === $user->getId()) {
+                $poll->displayResponsesEditing();
             } else {
-              $poll->displayResponsesEditing();
+                printAlert("You do not have access to this poll.");        
             }
         }
         break;

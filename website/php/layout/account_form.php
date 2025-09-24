@@ -1,7 +1,7 @@
 <div class="row">
     <div class="col-12 text-end">
-        <a href="/password_reset">Change password</a><br>
-        <a href="/logout" title="Logout">
+        <a class="accent3" href="/password_reset">Change password</a><br>
+        <a class="accent3" href="/logout" title="Logout">
             <i class="fa fa-sign-out" aria-hidden="true"></i> Logout
         </a>
     </div>

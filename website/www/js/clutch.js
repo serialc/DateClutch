@@ -147,6 +147,59 @@ var CLU = {
     deleteElement: function (eid) {
         const delem = document.getElementById(eid);
         delem.parentElement.removeChild(delem);
+    },
+    controller: new AbortController(),
+    searchValidEmail: function (el) {
+        let email = el.value;
+        let subbut = document.getElementById("emailTransferSubmit");
+
+        subbut.innerHTML = 'Not valid';
+
+        if (this.validateEmail(email)) {
+
+            // indicate that we're checking if the email is valid
+            subbut.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div>';
+
+            // See if we made an earlier and ongoing request
+            if (!this.controller.signal.aborted) {
+                // cancel any previous request if it exists
+                this.controller.abort();
+                this.controller = new AbortController();
+            }
+
+            const signal = this.controller.signal;
+
+            // check if this is in the DB
+            fetch("/api/email_validation", {
+                method: 'POST',
+                cache: 'no-cache',
+                signal: signal,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({'email': email})
+            })
+            .then((response) => response.json())
+            .then((resp) => {
+                if ( resp === "success" ) {
+                    subbut.innerHTML = 'Transfer poll ownership';
+                    subbut.disabled = false;
+                } else {
+                    subbut.innerHTML = 'Not found';
+                    subbut.disabled = true;
+                }
+            })
+            .catch(e => {
+                // do nothing, further typing cancelled the fetch
+            });
+        } else {
+            subbut.disabled = true;
+        };
+    },
+    validateEmail: function (email) {
+        return String(email)
+            .toLowerCase()
+            .match(
+              /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            );
     }
 };
 
