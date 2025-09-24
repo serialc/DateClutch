@@ -824,6 +824,7 @@ class Poll
         echo '<p>If your poll is shared outside of your control or being spammed, you can create a new URL/link for your poll, destroying the old one. This will create a new secret link/URL for the public and results pages.</p>';
 
         echo '<form action="" method="post">';
+        echo '<p><em class="accent2">Careful: This will break links you have shared for this poll.</em></p>';
         echo '<button name="regenerate_poll_codes" class="btn" type="submit">Regenerate poll URLs</button>';
         echo '</form>';
 
