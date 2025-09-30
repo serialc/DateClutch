@@ -699,6 +699,11 @@ class Poll
         echo "</div></div>";
     }
 
+    public function getId ()
+    {
+        return $this->pid;
+    }
+
     public function getTitle ()
     {
         return $this->title;
