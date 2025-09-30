@@ -46,6 +46,10 @@ case 'password_reset':
     include '../php/pw_reset.php';
     break;
 
+case 'unsub':
+    include '../php/unsubscribe.php';
+    break;
+
 case 'terms_of_use':
     include '../php/layout/terms_of_use.html';
     break;

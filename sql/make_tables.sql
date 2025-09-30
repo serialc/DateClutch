@@ -33,10 +33,11 @@ CREATE TABLE polldates (
 
 -- Associate users to a poll for notifications
 CREATE TABLE pollusers (
-    uid MEDIUMINT UNSIGNED, 
     pid MEDIUMINT UNSIGNED,
-    notifications TINYINT UNSIGNED NOT NULL,
-    PRIMARY KEY (uid, pid)
+    email VARCHAR(128) NOT NULL,
+    status TINYINT UNSIGNED DEFAULT 0,
+    code VARCHAR(64),
+    PRIMARY KEY (pid, email)
 );
 
 -- Create list of invitations that time out

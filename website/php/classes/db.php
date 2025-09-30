@@ -169,15 +169,26 @@ class DataBaseConnection
         return ($result and $stmt->rowCount() === 1);
     }
 
-    public function editPoll ($uid, $pid, $title, $description, $priv_mode)
+    public function editPoll ($uid, $pid, $title, $description, $priv_mode, $emails)
     {
         $sql = "UPDATE " . TABLE_POLLS .
             " SET title=?, description=?, privacy=? WHERE uid=? AND pid=?";
 
         $stmt = $this->conn->prepare($sql);
         $result = $stmt->execute([$title, $description, intval($priv_mode), $uid, $pid]);
-        // check the query result and that exactly one row was updated
-        return ($result and $stmt->rowCount() === 1);
+
+        // check the query result so far
+        if ($result) {
+            // to update the notification emails, delete all for this poll first, then add
+            // delete
+            $this->deleteEmailsToBeNotified($pid);
+
+            // add emails to notify to poll
+            $this->addEmailsToBeNotified($pid, $emails);
+
+            return true;
+        }
+        return false;
     }
 
     public function createPoll ($uid, $title, $code, $admin_code, $description, $priv_mode, $dates, $emails)
@@ -191,6 +202,7 @@ class DataBaseConnection
 
         // get the pid: $this->conn->lastInsertId()
         $pollid = $this->conn->lastInsertId();
+
         // repackage dates with interspersed pid and dates
         $bound_variables_array = [];
         foreach ($dates as $pdate) {
@@ -209,9 +221,55 @@ class DataBaseConnection
         }
 
         // add notification emails
-        // - later
+        $this->addEmailsToBeNotified($pollid, $emails);
 
         return true;
+    }
+
+    public function addEmailsToBeNotified($pid, $emails)
+    {
+        // add each email
+        foreach ($emails as $email) {
+            $code = getRandomCode(64);
+
+            $sql = "INSERT INTO " . TABLE_POLLUSERS .
+                " (pid, email, code)" .
+                " VALUES (?,?,?)";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([$pid, $email, $code]);
+        }
+        return true;
+    }
+
+    public function getPollEmailsToBeNotified($pid)
+    {
+        $pnotifiers = $this->getPollNotifiers($pid);
+
+        $emails = [];
+        foreach($pnotifiers as $pn) {
+            array_push($emails, $pn['email']);
+        }
+        return $emails;
+    }
+
+    public function getPollNotifiers($pid)
+    {
+        $sql = "SELECT * FROM " . TABLE_POLLUSERS . " WHERE pid=?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([$pid]);
+
+        $notifiers = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            array_push($notifiers, $row);
+        }
+        return $notifiers;
+    }
+
+    public function deleteEmailsToBeNotified($pid)
+    {
+        $sql = "DELETE FROM " . TABLE_POLLUSERS . " WHERE pid=?";
+        $stmt = $this->conn->prepare($sql);
+        return($stmt->execute([$pid]));
     }
 
     public function retrievePollFromPid ($pid)
@@ -255,6 +313,7 @@ class DataBaseConnection
         $sql = "SELECT pdate, clutcher FROM " . TABLE_POLLDATES . " WHERE pid=?";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$pid]);
+
         $polldates = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             array_push($polldates, $row);
@@ -294,7 +353,16 @@ class DataBaseConnection
             " SET clutcher=? WHERE pid=? AND pdate=? AND clutcher IS NULL";
         $stmt = $this->conn->prepare($sql);
         $result = $stmt->execute([$clutcher, $pid, $date]);
-        // check the query result and that at least one row was updated
+        // check the query result and that exactly one row was updated
+        return ($result and $stmt->rowCount() === 1);
+    }
+
+    public function pollSubscriberDelete($pid, $code)
+    {
+        $sql = "DELETE FROM " . TABLE_POLLUSERS . " WHERE pid=? AND code=?";
+        $stmt = $this->conn->prepare($sql);
+        $result = $stmt->execute([$pid, $code]);
+        // check the query result and that exactly one row was deleted
         return ($result and $stmt->rowCount() === 1);
     }
 

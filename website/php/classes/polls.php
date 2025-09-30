@@ -36,6 +36,11 @@ class Poll
     {
         return (new self())->db->pollDelete($uid, $pid);
     }
+
+    public static function deleteSubscriber ($pid, $code)
+    {
+        return (new self())->db->pollSubscriberDelete($pid, $code);
+    }
     
     public static function addDate ($uid, $pid, $date, $time )
     {
@@ -360,14 +365,22 @@ class Poll
         }
 
         // show form if we haven't submitted data yet
-        // this is for new polls and editing polls
+        // this is for new polls (this is empty) and editing polls (this loaded data)
         if (!isset($_POST['ptitle'])) {
-            // haven't implemented notifications (the '' parameter) yet 
-            $this->displayEditForm($edit_mode, $this->title, $this->description, $this->dates, '', $this->enhanced_privacy);
+            if ($edit_mode) {
+                // load the notifier emails
+                $notifier_emails = $this->db->getPollEmailsToBeNotified($this->pid);
+                $notifier_emails = implode(',', $notifier_emails);
+            } else {
+                $notifier_emails = '';
+            }
+
+            $this->displayEditForm($edit_mode, $this->title, $this->description, $this->dates, $notifier_emails, $this->enhanced_privacy);
         }
+
         // show POSTed form that has errors
         if ($submit_error) {
-            $this->displayEditForm($edit_mode, $_POST['ptitle'], $_POST['pdescription'], $_POST['pdates'], '', isset($_POST['enprivacy']) );
+            $this->displayEditForm($edit_mode, $_POST['ptitle'], $_POST['pdescription'], $_POST['pdates'], $_POST['pnotifications'], isset($_POST['enprivacy']) );
         }
     }
 
@@ -460,6 +473,7 @@ class Poll
         // only evaluate emails if there are some
         if(isset($_POST['pnotifications']) and !empty(trim($_POST['pnotifications']))) {
             foreach (explode(',', $_POST['pnotifications']) as $nemail) {
+                print($nemail);
                 $san_nemail = filter_var($nemail, FILTER_SANITIZE_EMAIL);
                 if (checkEmailValidity($san_nemail)) {
                     array_push($valid_notify_array, filter_var($nemail, FILTER_SANITIZE_EMAIL));
@@ -497,8 +511,8 @@ class Poll
                     return false;
                 }
             } else {
-                // If the poll is being edited
-                if($this->db->editPoll($user->getId(), $this->pid, $this->title, $this->description, $this->enhanced_privacy)) {
+                // If the poll is being edited, need to send poll id
+                if($this->db->editPoll($user->getId(), $this->pid, $this->title, $this->description, $this->enhanced_privacy, $valid_notify_array)) {
                     printSuccess("Poll updated.");
                     $this->showLinks();
                 } else {
@@ -510,6 +524,7 @@ class Poll
         return $submit_error;
     }
 
+    // is called for editing a form and a new form
     private function displayEditForm ($edit_mode, $ptitle, $pdescription, $pdates, $pnotifications, $enhanced_privacy)
     {
         // form and title input
@@ -540,7 +555,7 @@ class Poll
         echo $pdescription . '</textarea>';
 
         echo <<< _END
-                <small id="descriptionHelp" class="form-text text-muted">You can enter markdown to format text. What is <a href="https://www.markdowntutorial.com/" target="_blank">markdown</a>?</small>
+                <small id="descriptionHelp" class="form-text text-muted">Text can be formatted using <a href="https://www.markdowntutorial.com/" target="_blank">markdown</a> syntax.</small>
             </div>
         _END;
 
@@ -562,13 +577,13 @@ class Poll
         echo <<< _END
             <div class="col-12 mb-3">
                 <label for="pnotifications" class="form-label">Notify</label>
-                <input type="text" class="form-control" placeholder="Disabled" id="pnotifications" name="pnotifications" maxlength="256" disabled aria-describedby="notifHelp" value="
+                <input type="text" class="form-control" placeholder="" id="pnotifications" name="pnotifications" maxlength="256" aria-describedby="notifHelp" value="
         _END;
 
         echo $pnotifications . '">';
 
         echo <<< _END
-                <small id="notifHelp" class="form-text text-muted">Provide comma separated email addresses of people to be notified when someone submits a poll reponse.</small>
+                <small id="notifHelp" class="form-text text-muted">Provide <b>semi-colon</b> separated emails to notify poll reponses. Unsubscribing is provided.</small>
             </div>
         _END;
 
@@ -836,5 +851,10 @@ class Poll
         echo '<div>Poll results code:<br><small><a href="' . $poll_results_url . '">' . $this->admin_code . '</a></small></div>';
         echo '</small><p>';
 
+    }
+
+    public function getNotifiers()
+    {
+        return($this->db->getPollNotifiers($this->pid));
     }
 }

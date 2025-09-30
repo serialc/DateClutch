@@ -67,6 +67,15 @@ if (isset($req[1])) {
                     $poemail = new Mail();
                     $poemail->notifyCreator($poll->getCreatorName(), $poll->getTitle(), $pname, $poll->getCleanDate($req_date), $poll->getCreatorEmail());
 
+                    // get the people to notify
+                    $notifiers = $poll->getNotifiers();
+                    // email the poll notifiers
+                    foreach ($notifiers as $pn) {
+                        $unsub_url = 'http://' . $_SERVER['SERVER_NAME'] . '/unsub/' . $poll->getId() . '/' . $pn['code'];
+                        $pnemail = new Mail();
+                        $pnemail->notifyFollower($poll->getTitle(), $pname, $poll->getCleanDate($req_date), $poll->getCreatorName(), $poll->getCreatorEmail(), $pn['email'], $unsub_url);
+                    }
+
                     // provide visual feedback
                     echo "<h2>That's done. Thank you.</h2>";
                 } else {

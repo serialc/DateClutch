@@ -69,6 +69,33 @@ class Mail
         return true;
     }
 
+    public function notifyFollower ($title, $clutcher_name, $date, $creator_name, $creator_email, $dest_email, $unsub_code)
+    {
+        global $log;
+
+        $name = htmlentities("Poll follower", ENT_COMPAT, 'UTF-8');
+        $subject = html_entity_decode($title, ENT_QUOTES, 'UTF-8');
+        $title = iconv('UTF-8', 'ISO-8859-1', $title);
+        $clutcher_name = htmlentities($clutcher_name, ENT_COMPAT, 'UTF-8');
+
+        $html = '<html><head><meta http-equiv="Content-type" content="text/html; charset=utf-8" /></head>' .
+            '<body><div style="font-size: 1.3em; background-color: #212529; padding: 10%; color: #dee2e6;"><center>' .
+            '<p style="color: #dee2e6;">Dear <strong style="color: #A836FF">' . $name .
+            '</strong></span>,<p>' . "\n" .
+            '<p><stron>' . $clutcher_name . '</strong> just clutched the strong date of <strong style="color: #36FFA8">' . $date . '</strong> for the ' .
+            '<span style="color: #FFA836;"><strong>DateClutch</strong></span> poll titled<br><strong>"' . $title . '"</strong>.</p>' . "\n" .
+            '<p style="color: #dee2e6;">Keep up the good work.</p>' . "\n" .
+            '<small><p>You are receiving this because ' . $creator_name . ' (' . $creator_email . ') wishes you to be notified when someone clutches a date from this poll.</p>' . "\n" .
+            '<p>You can of course <a style="color: #FFA836" href="' . $unsub_code . '">unsubscribe</a>.</p></small>' . "\n" .
+            '</center></div></body></html>';
+
+        $text = strip_tags($html);
+
+        if( !$this->send($dest_email, $name, $subject, $html, $text, false) ) {
+                $log->error("Failed to send email notification to follower " . $dest_email . ' for ' . $title . '.');
+        }
+    }
+
     public function notifyCreator ($name, $title, $clutcher_name, $date, $email)
     {
         global $log;
@@ -83,7 +110,7 @@ class Mail
             '<p style="color: #dee2e6;">Dear <strong style="color: #A836FF">' . $name .
             '</strong></span>,<p>' . "\n" .
             '<p><stron>' . $clutcher_name . '</strong> just clutched the strong date of <strong style="color: #36FFA8">' . $date . '</strong> for the ' .
-            '<span style="color: #FFA836;"><strong>DateClutch</strong></span> poll titled <strong>"' . $title . '"</strong>.</p>' . "\n" .
+            '<span style="color: #FFA836;"><strong>DateClutch</strong></span> poll titled<br><strong>"' . $title . '"</strong>.</p>' . "\n" .
             '<p style="color: #dee2e6;">Keep up the good work.</p>' . "\n" .
             '</center></div></body></html>';
 
@@ -108,7 +135,7 @@ class Mail
             '<p style="color: #dee2e6;">Thank you <strong style="color: #A836FF">' . $name .
             '</strong></span> for clutching the strong date of <strong style="color: #36FFA8">' . $date . '</strong>.' . "\n" . '<p>Good choice!</p>' . "\n" .
             '<p style="color: #dee2e6;">Your date choice for the ' .
-            '<span style="color: #FFA836;"><strong>DateClutch</strong></span> poll titled <strong>"' . $title . '"</strong> has been shared with the creators.</p>' . "\n" .
+            '<span style="color: #FFA836;"><strong>DateClutch</strong></span> poll titled<br><strong>"' . $title . '"</strong><br>has been shared with the creators.</p>' . "\n" .
             '<p style="color: #dee2e6;">We hope that was easy.</p>' . "\n" .
             '<p style="color: #dee2e6;">If you have questions or concerns please contact the creator of the poll, ' . $reply_to_name . ', at the email address ' . $reply_to_email . '.</p>' . "\n" .
             '</center></div></body></html>';
