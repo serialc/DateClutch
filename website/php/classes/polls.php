@@ -473,7 +473,6 @@ class Poll
         // only evaluate emails if there are some
         if(isset($_POST['pnotifications']) and !empty(trim($_POST['pnotifications']))) {
             foreach (explode(',', $_POST['pnotifications']) as $nemail) {
-                print($nemail);
                 $san_nemail = filter_var($nemail, FILTER_SANITIZE_EMAIL);
                 if (checkEmailValidity($san_nemail)) {
                     array_push($valid_notify_array, filter_var($nemail, FILTER_SANITIZE_EMAIL));
